@@ -1,7 +1,7 @@
 const Product = require("../Models/Product");
 const ProductImage = require("../Models/ProductImage");
 const Promotion = require("../Models/Promotion");
-// const cloudinary = require("../config/cloudinary");
+const cloudinary = require("../Config/cloudinary");
 
 // Helper: format API response
 const sendResponse = (res, success, message, data = null, status = 200) => {
@@ -30,13 +30,13 @@ exports.createProduct = async (req, res) => {
       categories,
     });
 
-    // Upload images to Cloudinary and save URLs
+    
     if (req.files && req.files.length > 0) {
       const imagePromises = req.files.map((file, index) => {
         return ProductImage.create({
           productId: product._id,
-          imageUrl: file.path, // multer + cloudinary middleware returns path
-          isPrimary: index === 0, // first image is primary
+          imageUrl: file.path, 
+          isPrimary: index === 0, 
         });
       });
       await Promise.all(imagePromises);
