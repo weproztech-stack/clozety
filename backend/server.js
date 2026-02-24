@@ -5,14 +5,19 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 
 const app = express();
-
-
 app.use(cors());
 app.use(express.json());
 
-
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
+
+// Routes
+const productRoutes = require("./Routes/ProductRoute");
+
+// Apis
+app.use("/api/products", productRoutes);
+
+
 
 
 mongoose.connect(MONGO_URI)
@@ -24,10 +29,6 @@ mongoose.connect(MONGO_URI)
   process.exit(1);
 });
 
-// ===== Basic Route =====
-app.get("/", (req, res) => {
-  res.send("🚀 Server running");
-});
 
 // ===== Start Server =====
 app.listen(PORT, () => {
