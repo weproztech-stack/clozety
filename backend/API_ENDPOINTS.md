@@ -52,15 +52,16 @@ Base URL: `http://localhost:5000/api`
 
 ---
 
-## 📋 Orders — `/api/orders` _(coming soon)_
+## 📋 Orders — `/api/orders`
 
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| POST | `/orders` | 🔐 Protected | Place an order from cart |
-| GET | `/orders/my` | 🔐 Protected | Get current user's orders |
-| GET | `/orders/:id` | 🔐 Protected | Get order details |
-| GET | `/orders` | 👑 Admin | Get all orders |
-| PUT | `/orders/:id/status` | 👑 Admin | Update order status |
+| Method | Endpoint | Access | Body | Description |
+|--------|----------|--------|------|-------------|
+| POST | `/orders` | 🔐 Protected | `{ shippingAddress }` | Place order from cart |
+| GET | `/orders/my` | 🔐 Protected | — | Get my orders |
+| GET | `/orders/:id` | 🔐 Protected | — | Get order details (owner or admin) |
+| PUT | `/orders/:id/cancel` | 🔐 Protected | — | Cancel order (pending only) |
+| GET | `/orders` | 👑 Admin | — | Get all orders |
+| PUT | `/orders/:id/status` | 👑 Admin | `{ orderStatus, paymentStatus }` | Update order status |
 
 ---
 
