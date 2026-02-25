@@ -9,7 +9,7 @@ const app = express();
 
 // ===== Middleware =====
 app.use(cors({
-  origin: "http://localhost:3000", // change to your frontend URL
+  origin: "http://localhost:3000", 
   credentials: true
 }));
 

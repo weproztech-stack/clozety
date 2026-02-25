@@ -1,5 +1,5 @@
-const ProductImage = require("../Models/ProductImage");
-const Product = require("../Models/Product");
+const ProductImage = require("../Models/ProductModel/ProductImage");
+const Product = require("../Models/ProductModel/Product");
 const cloudinary = require("../Config/cloudinary");
 
 // @desc    Upload image(s) for a product
