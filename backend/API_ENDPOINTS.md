@@ -65,7 +65,7 @@ Base URL: `http://localhost:5000/api`
 
 ---
 
-## 👤 User Profile — `/api/users` _(coming soon)_
+## 👤 User Profile — `/api/users`
 
 | Method | Endpoint | Access | Body | Description |
 |--------|----------|--------|------|-------------|
