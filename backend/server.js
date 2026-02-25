@@ -15,11 +15,13 @@ const MONGO_URI = process.env.MONGO_URI;
 const productRoutes = require("./Routes/ProductRoute");
 const authRoutes = require("./Routes/AuthRoute");
 const adminRoutes = require("./Routes/AdminRoute");
+const cartRoutes = require("./Routes/CartRoute");
 
 // Apis
 app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/cart", cartRoutes);
 
 
 
