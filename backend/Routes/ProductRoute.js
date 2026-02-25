@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const productController = require("../Controllers/ProductController");
 const upload = require("../Middleware/Upload"); // multer + cloudinary
-
+const productImageRoutes = require("./ProductImageRoute");
 
 router.post(
   "/",
@@ -12,9 +12,8 @@ router.post(
 
 router.get("/", productController.getAllProducts);
 
-
+router.get("/slug/:slug", productController.getProductBySlug); // before /:id
 router.get("/:id", productController.getProductById);
-router.get("/slug/:slug", productController.getProductBySlug);
 router.put(
   "/:id",
   upload.array("images", 3),
@@ -24,4 +23,8 @@ router.put(
 router.delete("/:id", productController.deleteProduct);
 router.post("/:id/promotion", productController.addPromotion);
 router.delete("/:id/promotion/:promoId", productController.removePromotion);
+
+// Mount image routes — /:productId/images/**
+router.use("/:productId/images", productImageRoutes);
+
 module.exports = router;

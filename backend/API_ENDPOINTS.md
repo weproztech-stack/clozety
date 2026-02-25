@@ -71,3 +71,26 @@ Base URL: `http://localhost:5000/api`
 |--------|----------|--------|------|-------------|
 | PUT | `/users/me` | üîê Protected | `{ name, avatar, addresses }` | Update profile |
 | PUT | `/users/me/password` | üîê Protected | `{ oldPassword, newPassword }` | Change password |
+
+---
+
+## ??? Categories ó `/api/categories`
+
+| Method | Endpoint | Access | Body | Description |
+|--------|----------|--------|------|-------------|
+| GET | `/categories` | Public | ó | Get all active categories |
+| GET | `/categories/:id` | Public | ó | Get single category |
+| POST | `/categories` | ?? Admin | `{ name, description }` | Create category |
+| PUT | `/categories/:id` | ?? Admin | `{ name, description, status }` | Update category |
+| DELETE | `/categories/:id` | ?? Admin | ó | Delete category |
+
+---
+
+## ??? Product Images ó `/api/products/:productId/images`
+
+| Method | Endpoint | Access | Body | Description |
+|--------|----------|--------|------|-------------|
+| GET | `/products/:productId/images` | Public | ó | Get all images for a product |
+| POST | `/products/:productId/images` | ?? Admin | form-data: images[] | Upload up to 5 images |
+| PUT | `/products/:productId/images/:imageId/primary` | ?? Admin | ó | Set image as primary |
+| DELETE | `/products/:productId/images/:imageId` | ?? Admin | ó | Delete image (Cloudinary + DB) |
