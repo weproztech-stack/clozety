@@ -13,21 +13,25 @@ const MONGO_URI = process.env.MONGO_URI;
 
 // Routes
 const productRoutes = require("./Routes/ProductRoute");
+const authRoutes = require("./Routes/AuthRoute");
+const adminRoutes = require("./Routes/AdminRoute");
 
 // Apis
 app.use("/api/products", productRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 
 
 
 
 mongoose.connect(MONGO_URI)
-.then(() => {
-  console.log("✅ MongoDB connected successfully");
-})
-.catch((err) => {
-  console.error("❌ MongoDB connection error:", err.message);
-  process.exit(1);
-});
+  .then(() => {
+    console.log("✅ MongoDB connected successfully");
+  })
+  .catch((err) => {
+    console.error("❌ MongoDB connection error:", err.message);
+    process.exit(1);
+  });
 
 
 // ===== Start Server =====
