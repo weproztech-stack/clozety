@@ -1,6 +1,6 @@
-const Product = require("../Models/Product");
-const ProductImage = require("../Models/ProductImage");
-const Promotion = require("../Models/Promotion");
+const Product = require("../Models/ProductModel/Product");
+const ProductImage = require("../Models/ProductModel/ProductImage");
+const Promotion = require("../Models/ProductModel/Promotion");
 // const cloudinary = require("../config/cloudinary");
 
 // Helper: format API response
