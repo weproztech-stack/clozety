@@ -15,6 +15,7 @@ const getAllUsers = async (req, res) => {
 // @desc    Get a single user by ID
 // @route   GET /api/admin/users/:id
 // @access  Admin
+
 const getUserById = async (req, res) => {
     try {
         const user = await User.findById(req.params.id).select("-password");
@@ -24,6 +25,7 @@ const getUserById = async (req, res) => {
         res.status(500).json({ message: "Server error", error: err.message });
     }
 };
+
 
 // @desc    Update user role (promote/demote)
 // @route   PUT /api/admin/users/:id/role
