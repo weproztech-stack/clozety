@@ -1,5 +1,8 @@
 require("dotenv").config();
 
+// Express 5 + AdminJS workaround: set tmp dir before importing AdminJS
+process.env.ADMIN_JS_TMP_DIR = process.env.ADMIN_JS_TMP_DIR || "dist/adminjs";
+
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -19,7 +22,7 @@ app.use(cookieParser());
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
-// ===== Routes =====
+// ===== API Routes =====
 const productRoutes = require("./Routes/ProductRoute");
 const authRoutes = require("./Routes/AuthRoute");
 const adminRoutes = require("./Routes/AdminRoute");
@@ -58,7 +61,19 @@ mongoose.connect(MONGO_URI)
     process.exit(1);
   });
 
-// ===== Start Server =====
-app.listen(PORT, () => {
-  console.log(`🔥 Server running on port ${PORT}`);
-});
+// ===== AdminJS + Start Server =====
+const setupAdminJS = require("./Config/adminSetup");
+
+setupAdminJS(app)
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`🔥 Server running on port ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("❌ AdminJS setup error:", err);
+    // Start server without AdminJS if it fails
+    app.listen(PORT, () => {
+      console.log(`🔥 Server running on port ${PORT} (AdminJS failed to load)`);
+    });
+  });
