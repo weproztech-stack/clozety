@@ -9,7 +9,7 @@ const app = express();
 
 // ===== Middleware =====
 app.use(cors({
-  origin: "http://localhost:3000", 
+  origin: "http://localhost:3000",
   credentials: true
 }));
 
@@ -27,6 +27,13 @@ const cartRoutes = require("./Routes/CartRoute");
 const orderRoutes = require("./Routes/OrderRoute");
 const userRoutes = require("./Routes/UserRoute");
 const categoryRoutes = require("./Routes/CategoryRoute");
+const variantRoutes = require("./Routes/VariantRoute");
+const wishlistRoutes = require("./Routes/WishlistRoute");
+const couponRoutes = require("./Routes/CouponRoute");
+const bannerRoutes = require("./Routes/BannerRoute");
+const contactRoutes = require("./Routes/ContactRoute");
+const paymentRoutes = require("./Routes/PaymentRoute");
+const shippingRoutes = require("./Routes/ShippingRoute");
 
 app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
@@ -35,6 +42,13 @@ app.use("/api/cart", cartRoutes);
 app.use("/api/orders", orderRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/categories", categoryRoutes);
+app.use("/api/variants", variantRoutes);
+app.use("/api/wishlist", wishlistRoutes);
+app.use("/api/coupons", couponRoutes);
+app.use("/api/banners", bannerRoutes);
+app.use("/api/contact", contactRoutes);
+app.use("/api/payments", paymentRoutes);
+app.use("/api/shipping", shippingRoutes);
 
 // ===== MongoDB =====
 mongoose.connect(MONGO_URI)
