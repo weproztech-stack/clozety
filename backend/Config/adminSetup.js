@@ -40,11 +40,12 @@ async function setupAdminJS(app) {
                 options: {
                     navigation: productNav,
                     listProperties: ["name", "price", "discountPrice", "stock", "status", "createdAt"],
-                    editProperties: ["name", "description", "shortDescription", "price", "discountPrice", "sku", "stock", "status", "categories", "tags", "metaTitle", "metaDescription"],
-                    showProperties: ["name", "description", "shortDescription", "price", "discountPrice", "sku", "stock", "slug", "status", "categories", "tags", "metaTitle", "metaDescription", "views", "totalSold", "isDeleted", "createdAt", "updatedAt"],
+                    editProperties: ["name", "description", "shortDescription", "price", "discountPrice", "sku", "stock", "status", "categories", "metaTitle", "metaDescription"],
+                    showProperties: ["name", "description", "shortDescription", "price", "discountPrice", "sku", "stock", "slug", "status", "categories", "metaTitle", "metaDescription", "views", "totalSold", "isDeleted", "createdAt", "updatedAt"],
                     properties: {
                         description: { type: "textarea" },
                         metaDescription: { type: "textarea" },
+                        tags: { isVisible: false },
                         status: {
                             availableValues: [
                                 { value: "active", label: "Active" },
@@ -102,6 +103,7 @@ async function setupAdminJS(app) {
                     editProperties: ["name", "email", "role", "avatar"],
                     properties: {
                         password: { isVisible: { list: false, show: false, edit: false, filter: false } },
+                        addresses: { isVisible: false },
                         role: {
                             availableValues: [
                                 { value: "user", label: "User" },
@@ -116,6 +118,9 @@ async function setupAdminJS(app) {
                 options: {
                     navigation: userNav,
                     listProperties: ["user", "createdAt", "updatedAt"],
+                    properties: {
+                        products: { isVisible: false },
+                    },
                 },
             },
 
@@ -126,6 +131,8 @@ async function setupAdminJS(app) {
                     navigation: orderNav,
                     listProperties: ["user", "totalPrice", "orderStatus", "paymentStatus", "createdAt"],
                     properties: {
+                        items: { isVisible: false },
+                        shippingAddress: { isVisible: false },
                         orderStatus: {
                             availableValues: [
                                 { value: "pending", label: "Pending" },
@@ -150,6 +157,9 @@ async function setupAdminJS(app) {
                 options: {
                     navigation: orderNav,
                     listProperties: ["user", "createdAt", "updatedAt"],
+                    properties: {
+                        items: { isVisible: false },
+                    },
                 },
             },
             {
@@ -186,6 +196,7 @@ async function setupAdminJS(app) {
                     navigation: orderNav,
                     listProperties: ["order", "carrier", "trackingNumber", "status", "createdAt"],
                     properties: {
+                        shippingAddress: { isVisible: false },
                         status: {
                             availableValues: [
                                 { value: "processing", label: "Processing" },
@@ -225,6 +236,7 @@ async function setupAdminJS(app) {
                     navigation: marketingNav,
                     listProperties: ["code", "discountType", "discountValue", "usedCount", "isActive", "endDate"],
                     properties: {
+                        applicableCategories: { isVisible: false },
                         discountType: {
                             availableValues: [
                                 { value: "percentage", label: "Percentage (%)" },
