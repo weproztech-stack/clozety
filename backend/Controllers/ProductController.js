@@ -2,7 +2,7 @@ const Product = require("../Models/ProductModel/Product");
 const ProductImage = require("../Models/ProductModel/ProductImage");
 const Promotion = require("../Models/ProductModel/Promotion");
 const Category = require("../Models/ProductModel/Category");
-const cloudinary = require("../config/cloudinary");
+const cloudinary = require("../Config/cloudinary");
 const mongoose = require("mongoose");
 // Helper: format API response
 const sendResponse = (res, success, message, data = null, status = 200) => {
@@ -26,13 +26,13 @@ exports.createProduct = async (req, res) => {
   session.startTransaction();
 
   try {
-    const { 
-      name, 
-      description, 
+    const {
+      name,
+      description,
       shortDescription,
-      price, 
-      discountPrice, 
-      stock, 
+      price,
+      discountPrice,
+      stock,
       categories,
       tags,
       metaTitle,
@@ -54,18 +54,18 @@ exports.createProduct = async (req, res) => {
 
     // ✅ WHY: Validate categories exist
     if (categories?.length) {
-      const validCategories = await Category.find({ 
+      const validCategories = await Category.find({
         _id: { $in: categories },
         status: "active"
       }).session(session);
-      
+
       if (validCategories.length !== categories.length) {
         return sendResponse(res, false, "One or more categories are invalid", null, 400);
       }
     }
 
     // Generate SKU if not provided
-    const sku = req.body.sku || 
+    const sku = req.body.sku ||
       `${name.substring(0, 3).toUpperCase()}${Date.now().toString().slice(-6)}${Math.floor(Math.random() * 100)}`;
 
     const existingSku = await Product.findOne({ sku }).session(session);
@@ -101,7 +101,7 @@ exports.createProduct = async (req, res) => {
       }));
 
       await ProductImage.insertMany(images, { session });
-      
+
       // ✅ WHY: Auto-publish if images added
       product.status = "active";
       await product.save({ session });
@@ -128,17 +128,17 @@ exports.createProduct = async (req, res) => {
 // ========================
 exports.getAllProducts = async (req, res) => {
   try {
-    const { 
-      type, 
-      category, 
+    const {
+      type,
+      category,
       status,
       search,
       minPrice,
       maxPrice,
       sortBy = "createdAt",
       sortOrder = "desc",
-      limit = 20, 
-      page = 1 
+      limit = 20,
+      page = 1
     } = req.query;
 
     const pageNumber = Math.max(1, Number(page));
@@ -259,7 +259,7 @@ exports.getAllProducts = async (req, res) => {
 exports.getProductById = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     if (!isValidObjectId(id)) {
       return sendResponse(res, false, "Invalid product ID", null, 400);
     }
@@ -310,7 +310,7 @@ exports.updateProduct = async (req, res) => {
 
   try {
     const { id } = req.params;
-    
+
     if (!isValidObjectId(id)) {
       return sendResponse(res, false, "Invalid product ID", null, 400);
     }
@@ -321,7 +321,7 @@ exports.updateProduct = async (req, res) => {
     }
 
     const updates = req.body;
-    
+
     // ✅ WHY: Validate price if updating
     if (updates.price && updates.price <= 0) {
       return sendResponse(res, false, "Price must be greater than 0", null, 400);
@@ -337,11 +337,11 @@ exports.updateProduct = async (req, res) => {
 
     // ✅ WHY: Check SKU uniqueness if updating
     if (updates.sku && updates.sku !== product.sku) {
-      const existingSku = await Product.findOne({ 
+      const existingSku = await Product.findOne({
         sku: updates.sku,
         _id: { $ne: id }
       }).session(session);
-      
+
       if (existingSku) {
         return sendResponse(res, false, "SKU already exists", null, 400);
       }
@@ -349,11 +349,11 @@ exports.updateProduct = async (req, res) => {
 
     // Handle categories update
     if (updates.categories) {
-      const validCategories = await Category.find({ 
+      const validCategories = await Category.find({
         _id: { $in: updates.categories },
         status: "active"
       }).session(session);
-      
+
       if (validCategories.length !== updates.categories.length) {
         return sendResponse(res, false, "One or more categories are invalid", null, 400);
       }
@@ -376,7 +376,7 @@ exports.updateProduct = async (req, res) => {
       }
 
       const currentImageCount = await ProductImage.countDocuments({ productId: product._id });
-      
+
       const images = req.files.map((file, index) => ({
         productId: product._id,
         imageUrl: file.path,
@@ -421,7 +421,7 @@ exports.deleteProduct = async (req, res) => {
 
   try {
     const { id } = req.params;
-    
+
     if (!isValidObjectId(id)) {
       return sendResponse(res, false, "Invalid product ID", null, 400);
     }
@@ -612,7 +612,7 @@ exports.removePromotion = async (req, res) => {
     }
 
     const promotion = await Promotion.findById(promoId).session(session);
-    
+
     if (!promotion) {
       return sendResponse(res, false, "Promotion not found", null, 404);
     }
@@ -650,33 +650,33 @@ exports.bulkUpdateProducts = async (req, res) => {
     }
 
     let updateData = {};
-    
-    switch(operation) {
+
+    switch (operation) {
       case "updateStatus":
         if (!data.status) {
           return sendResponse(res, false, "Status is required", null, 400);
         }
         updateData.status = data.status;
         break;
-        
+
       case "updateCategory":
         if (!data.categoryId) {
           return sendResponse(res, false, "Category ID is required", null, 400);
         }
         updateData.$addToSet = { categories: data.categoryId };
         break;
-        
+
       case "removeCategory":
         if (!data.categoryId) {
           return sendResponse(res, false, "Category ID is required", null, 400);
         }
         updateData.$pull = { categories: data.categoryId };
         break;
-        
+
       case "delete":
         updateData = { isDeleted: true, status: "inactive" };
         break;
-        
+
       default:
         return sendResponse(res, false, "Invalid operation", null, 400);
     }
