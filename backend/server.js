@@ -37,6 +37,7 @@ const bannerRoutes = require("./Routes/BannerRoute");
 const contactRoutes = require("./Routes/ContactRoute");
 const paymentRoutes = require("./Routes/PaymentRoute");
 const shippingRoutes = require("./Routes/ShippingRoute");
+const statsRoutes = require("./Routes/StatsRoute");
 
 app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
@@ -52,6 +53,10 @@ app.use("/api/banners", bannerRoutes);
 app.use("/api/contact", contactRoutes);
 app.use("/api/payments", paymentRoutes);
 app.use("/api/shipping", shippingRoutes);
+
+// Stats page & JSON API (must be before AdminJS mount)
+app.use("/admin/stats", statsRoutes);
+app.use("/admin-api/stats", statsRoutes);
 
 // ===== MongoDB =====
 mongoose.connect(MONGO_URI)

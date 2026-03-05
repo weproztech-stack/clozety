@@ -20,7 +20,7 @@ const paymentSchema = new mongoose.Schema({
     },
     currency: {
         type: String,
-        default: "PKR",
+        default: "INR",
         uppercase: true,
     },
     method: {

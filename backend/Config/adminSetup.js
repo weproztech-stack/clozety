@@ -31,6 +31,7 @@ async function setupAdminJS(app) {
     const orderNav = { name: "Orders", icon: "Package" };
     const marketingNav = { name: "Marketing", icon: "Star" };
     const supportNav = { name: "Support", icon: "MessageCircle" };
+    const analyticsNav = { name: "Analytics", icon: "BarChart2" };
 
     const adminJs = new AdminJS({
         resources: [
@@ -293,6 +294,7 @@ async function setupAdminJS(app) {
             logo: false,
         },
         rootPath: "/admin",
+
     });
 
     // Authentication
@@ -320,6 +322,47 @@ async function setupAdminJS(app) {
             secret: process.env.SESSION_SECRET || "clozety-admin-session-secret",
         }
     );
+
+    // Inject floating Analytics button into every AdminJS HTML page
+    app.use(adminJs.options.rootPath, (req, res, next) => {
+        const _send = res.send.bind(res);
+        res.send = (body) => {
+            if (typeof body === "string" && body.includes("</body>")) {
+                const btn = `
+<div style="
+  position:fixed;
+  bottom:24px;
+  left:50%;
+  transform:translateX(-50%);
+  z-index:99999;
+  pointer-events:auto;
+">
+  <a href="/admin/stats" style="
+    display:inline-flex;
+    align-items:center;
+    gap:8px;
+    background:linear-gradient(135deg,#7c6ef7,#56cfb2);
+    color:#fff;
+    text-decoration:none;
+    font-family:Inter,sans-serif;
+    font-size:13px;
+    font-weight:600;
+    padding:10px 20px;
+    border-radius:50px;
+    box-shadow:0 4px 20px rgba(124,110,247,0.5);
+    letter-spacing:.02em;
+    white-space:nowrap;
+    transition:opacity .2s;
+  " onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+    📊 Analytics Dashboard
+  </a>
+</div>`;
+                body = body.replace("</body>", btn + "</body>");
+            }
+            return _send(body);
+        };
+        next();
+    });
 
     app.use(adminJs.options.rootPath, adminRouter);
     console.log(`📊 Admin panel: http://localhost:${process.env.PORT || 5000}${adminJs.options.rootPath}`);
