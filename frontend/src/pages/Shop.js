@@ -6,6 +6,7 @@ import ProductSkeleton from '../components/products/ProductSkeleton';
 import Breadcrumb from '../components/common/Breadcrumb';
 import api from '../utils/api';
 import { buildQueryString, extractProducts } from '../utils/helpers';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Shop = () => {
   const location = useLocation();
@@ -30,10 +31,8 @@ const Shop = () => {
       sortBy: params.get('sortBy') || 'createdAt',
       sortOrder: params.get('sortOrder') || 'desc',
       search: params.get('search') || '',
-      isTrending: params.get('isTrending') || '',
-      isOffer: params.get('isOffer') || '',
       page: parseInt(params.get('page')) || 1,
-      limit: parseInt(params.get('limit')) || 12
+      limit: 12
     };
   });
 
@@ -88,8 +87,6 @@ const Shop = () => {
       sortBy: 'createdAt',
       sortOrder: 'desc',
       search: '',
-      isTrending: '',
-      isOffer: '',
       page: 1,
       limit: 12
     };
@@ -125,50 +122,68 @@ const Shop = () => {
             </p>
           </div>
 
-          {loading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <ProductSkeleton key={i} />
-              ))}
-            </div>
-          ) : error ? (
-            <div className="text-center py-12">
-              <p className="text-red-500 mb-4">{error}</p>
-              <button 
-                onClick={fetchProducts}
-                className="px-6 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800"
+          <AnimatePresence mode="wait">
+            {loading ? (
+              <motion.div 
+                key="skeleton"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
               >
-                Try Again
-              </button>
-            </div>
-          ) : (
-            <>
-              <ProductGrid products={products} />
-              
-              {/* Pagination */}
-              {pagination.pages > 1 && (
-                <div className="flex justify-center items-center space-x-4 mt-8">
-                  <button
-                    onClick={() => handlePageChange(pagination.page - 1)}
-                    disabled={pagination.page === 1}
-                    className="px-4 py-2 border border-zinc-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50"
-                  >
-                    Previous
-                  </button>
-                  <span className="text-sm text-zinc-600">
-                    Page {pagination.page} of {pagination.pages}
-                  </span>
-                  <button
-                    onClick={() => handlePageChange(pagination.page + 1)}
-                    disabled={pagination.page === pagination.pages}
-                    className="px-4 py-2 border border-zinc-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50"
-                  >
-                    Next
-                  </button>
-                </div>
-              )}
-            </>
-          )}
+                {[...Array(6)].map((_, i) => (
+                  <ProductSkeleton key={i} />
+                ))}
+              </motion.div>
+            ) : error ? (
+              <motion.div 
+                key="error"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="text-center py-12"
+              >
+                <p className="text-red-500 mb-4">{error}</p>
+                <button 
+                  onClick={fetchProducts}
+                  className="px-6 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800"
+                >
+                  Try Again
+                </button>
+              </motion.div>
+            ) : (
+              <motion.div
+                key="products"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <ProductGrid products={products} />
+                
+                {/* Pagination */}
+                {pagination.pages > 1 && (
+                  <div className="flex justify-center items-center space-x-4 mt-8">
+                    <button
+                      onClick={() => handlePageChange(pagination.page - 1)}
+                      disabled={pagination.page === 1}
+                      className="px-4 py-2 border border-zinc-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50 transition-colors"
+                    >
+                      Previous
+                    </button>
+                    <span className="text-sm text-zinc-600">
+                      Page {pagination.page} of {pagination.pages}
+                    </span>
+                    <button
+                      onClick={() => handlePageChange(pagination.page + 1)}
+                      disabled={pagination.page === pagination.pages}
+                      className="px-4 py-2 border border-zinc-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-50 transition-colors"
+                    >
+                      Next
+                    </button>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>

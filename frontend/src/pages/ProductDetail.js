@@ -18,6 +18,7 @@ import { formatPrice, calculateDiscount } from '../utils/helpers';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import api from '../utils/api';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const ProductDetail = () => {
   const { slug } = useParams();
@@ -40,14 +41,35 @@ const ProductDetail = () => {
   const fetchProductDetail = async () => {
     setLoading(true);
     try {
-      const response = await api.get(`/api/products/${slug}`);
+      // Check if slug is MongoDB ObjectId
+      const isObjectId = /^[0-9a-fA-F]{24}$/.test(slug);
+      
+      let response;
+      if (isObjectId) {
+        // If it's an ID, use ID endpoint
+        response = await api.get(`/api/products/${slug}`);
+      } else {
+        // If it's a slug, use slug endpoint
+        response = await api.get(`/api/products/slug/${slug}`);
+      }
+      
       const productData = response.data.data || response.data;
       setProduct(productData);
       setSelectedImage(productData.images?.find(img => img.isPrimary) || productData.images?.[0]);
-      setRelatedProducts(productData.relatedProducts || []);
+      
+      // Fetch related products
+      if (productData.categories?.length > 0) {
+        try {
+          const categoryId = productData.categories[0]._id;
+          const relatedRes = await api.get(`/api/products?category=${categoryId}&limit=4`);
+          setRelatedProducts(relatedRes.data.data || []);
+        } catch (err) {
+          console.error('Error fetching related products:', err);
+        }
+      }
     } catch (err) {
-      setError('Product not found');
-      console.error(err);
+      console.error('Error fetching product:', err);
+      setError(err.response?.data?.message || 'Product not found');
     } finally {
       setLoading(false);
     }
@@ -97,7 +119,7 @@ const ProductDetail = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
         <h2 className="text-2xl font-bold text-zinc-900 mb-4">Product Not Found</h2>
         <p className="text-zinc-600 mb-8">{error || 'The product you are looking for does not exist.'}</p>
-        <Link to="/shop" className="px-6 py-3 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800">
+        <Link to="/shop" className="px-6 py-3 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-colors">
           Continue Shopping
         </Link>
       </div>
@@ -140,7 +162,7 @@ const ProductDetail = () => {
                     const prevIndex = currentIndex === 0 ? product.images.length - 1 : currentIndex - 1;
                     setSelectedImage(product.images[prevIndex]);
                   }}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
@@ -150,7 +172,7 @@ const ProductDetail = () => {
                     const nextIndex = currentIndex === product.images.length - 1 ? 0 : currentIndex + 1;
                     setSelectedImage(product.images[nextIndex]);
                   }}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-10 h-10 bg-white/80 backdrop-blur-sm rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-white"
                 >
                   <ChevronRight className="w-5 h-5" />
                 </button>
@@ -213,7 +235,7 @@ const ProductDetail = () => {
           <div className="mb-6">
             {product.stock > 0 ? (
               <p className="text-green-600 flex items-center">
-                <span className="w-2 h-2 bg-green-600 rounded-full mr-2"></span>
+                <span className="w-2 h-2 bg-green-600 rounded-full mr-2 animate-pulse"></span>
                 In Stock ({product.stock} available)
               </p>
             ) : (
@@ -258,14 +280,14 @@ const ProductDetail = () => {
             <button
               onClick={handleAddToCart}
               disabled={product.stock === 0}
-              className="flex-1 flex items-center justify-center px-6 py-3 bg-zinc-900 text-white rounded-lg font-semibold hover:bg-zinc-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 flex items-center justify-center px-6 py-3 bg-zinc-900 text-white rounded-lg font-semibold hover:bg-zinc-800 transition-all hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <ShoppingBag className="w-5 h-5 mr-2" />
               Add to Cart
             </button>
             <button
               onClick={handleWishlistToggle}
-              className={`p-3 border-2 rounded-lg transition-colors ${
+              className={`p-3 border-2 rounded-lg transition-all hover:scale-105 ${
                 inWishlist
                   ? 'border-red-500 bg-red-50 text-red-500 hover:bg-red-100'
                   : 'border-zinc-300 text-zinc-700 hover:bg-zinc-50'
@@ -296,73 +318,77 @@ const ProductDetail = () => {
       {/* Tabs */}
       <div className="mt-16 border-t border-zinc-200 pt-8">
         <div className="flex border-b border-zinc-200 mb-6">
-          <button
-            onClick={() => setActiveTab('description')}
-            className={`px-6 py-3 font-medium text-sm transition-colors relative ${
-              activeTab === 'description'
-                ? 'text-zinc-900 border-b-2 border-zinc-900'
-                : 'text-zinc-500 hover:text-zinc-700'
-            }`}
-          >
-            Description
-          </button>
-          <button
-            onClick={() => setActiveTab('specifications')}
-            className={`px-6 py-3 font-medium text-sm transition-colors relative ${
-              activeTab === 'specifications'
-                ? 'text-zinc-900 border-b-2 border-zinc-900'
-                : 'text-zinc-500 hover:text-zinc-700'
-            }`}
-          >
-            Specifications
-          </button>
-          <button
-            onClick={() => setActiveTab('reviews')}
-            className={`px-6 py-3 font-medium text-sm transition-colors relative ${
-              activeTab === 'reviews'
-                ? 'text-zinc-900 border-b-2 border-zinc-900'
-                : 'text-zinc-500 hover:text-zinc-700'
-            }`}
-          >
-            Reviews (24)
-          </button>
+          {['description', 'specifications', 'reviews'].map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-6 py-3 font-medium text-sm transition-colors relative ${
+                activeTab === tab
+                  ? 'text-zinc-900 border-b-2 border-zinc-900'
+                  : 'text-zinc-500 hover:text-zinc-700'
+              }`}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
         </div>
 
         <div className="prose max-w-none">
-          {activeTab === 'description' && (
-            <div className="text-zinc-600">
-              {product.description || 'No description available.'}
-            </div>
-          )}
+          <AnimatePresence mode="wait">
+            {activeTab === 'description' && (
+              <motion.div
+                key="description"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="text-zinc-600"
+              >
+                {product.description || 'No description available.'}
+              </motion.div>
+            )}
 
-          {activeTab === 'specifications' && (
-            <table className="w-full">
-              <tbody>
-                <tr className="border-b">
-                  <td className="py-3 font-medium text-zinc-900 w-1/4">Brand</td>
-                  <td className="py-3 text-zinc-600">{product.brand || 'CLOZETY'}</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-3 font-medium text-zinc-900">SKU</td>
-                  <td className="py-3 text-zinc-600">{product.sku || 'N/A'}</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-3 font-medium text-zinc-900">Category</td>
-                  <td className="py-3 text-zinc-600">{product.categories?.[0]?.name || 'Uncategorized'}</td>
-                </tr>
-                <tr className="border-b">
-                  <td className="py-3 font-medium text-zinc-900">Stock</td>
-                  <td className="py-3 text-zinc-600">{product.stock} units</td>
-                </tr>
-              </tbody>
-            </table>
-          )}
+            {activeTab === 'specifications' && (
+              <motion.div
+                key="specs"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+              >
+                <table className="w-full">
+                  <tbody>
+                    <tr className="border-b">
+                      <td className="py-3 font-medium text-zinc-900 w-1/4">Brand</td>
+                      <td className="py-3 text-zinc-600">{product.brand || 'CLOZETY'}</td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="py-3 font-medium text-zinc-900">SKU</td>
+                      <td className="py-3 text-zinc-600">{product.sku || 'N/A'}</td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="py-3 font-medium text-zinc-900">Category</td>
+                      <td className="py-3 text-zinc-600">{product.categories?.map(c => c.name).join(', ') || 'Uncategorized'}</td>
+                    </tr>
+                    <tr className="border-b">
+                      <td className="py-3 font-medium text-zinc-900">Stock</td>
+                      <td className="py-3 text-zinc-600">{product.stock} units</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </motion.div>
+            )}
 
-          {activeTab === 'reviews' && (
-            <div className="text-center py-12">
-              <p className="text-zinc-500">Customer reviews coming soon!</p>
-            </div>
-          )}
+            {activeTab === 'reviews' && (
+              <motion.div
+                key="reviews"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="text-center py-12"
+              >
+                <p className="text-zinc-500">Customer reviews coming soon!</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 

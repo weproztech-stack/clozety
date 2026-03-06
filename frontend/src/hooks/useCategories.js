@@ -22,5 +22,5 @@ export const useCategories = () => {
     }
   };
 
-  return { categories, loading, error };
+  return { categories, loading, error, refetch: fetchCategories };
 };

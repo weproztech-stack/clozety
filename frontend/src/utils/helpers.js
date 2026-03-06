@@ -29,7 +29,10 @@ export const getPrimaryImage = (images) => {
 
 // Extract products from API response
 export const extractProducts = (data) => {
-  return data?.data?.data || data?.data || data || [];
+  if (data?.data?.data) return data.data.data;
+  if (data?.data) return data.data;
+  if (Array.isArray(data)) return data;
+  return [];
 };
 
 // Build query string

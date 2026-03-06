@@ -4,9 +4,10 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import Breadcrumb from '../components/common/Breadcrumb';
 import { formatPrice } from '../utils/helpers';
-import { MapPin, Phone, Mail, CreditCard, Truck, Shield } from 'lucide-react';
+import { Truck, Shield, CreditCard } from 'lucide-react';
 import api from '../utils/api';
 import toast from 'react-hot-toast';
+import { motion } from 'framer-motion';
 
 const Checkout = () => {
   const navigate = useNavigate();
@@ -71,7 +72,7 @@ const Checkout = () => {
       });
       toast.success('Address added successfully');
     } catch (error) {
-      toast.error('Failed to add address');
+      toast.error(error.response?.data?.message || 'Failed to add address');
     } finally {
       setLoading(false);
     }
@@ -86,14 +87,22 @@ const Checkout = () => {
     setLoading(true);
     try {
       const orderData = {
-        address: selectedAddress,
+        shippingAddress: {
+          fullName: selectedAddress.fullName,
+          phone: selectedAddress.phone,
+          street: selectedAddress.addressLine1,
+          city: selectedAddress.city,
+          state: selectedAddress.state,
+          zip: selectedAddress.pincode,
+          country: 'India'
+        },
         paymentMethod,
         items: cart.items.map(item => ({
           product: item.product._id,
           quantity: item.quantity,
-          price: item.price
+          price: item.product.discountPrice > 0 ? item.product.discountPrice : item.product.price
         })),
-        totalAmount: cart.totalPrice + (cart.totalPrice * 0.18) // Including tax
+        totalPrice: cart.totalPrice
       };
 
       const response = await api.post('/api/orders', orderData);
@@ -102,17 +111,17 @@ const Checkout = () => {
         // Redirect to payment gateway
         const paymentResponse = await api.post('/api/payments', {
           orderId: response.data.order._id,
-          amount: orderData.totalAmount
+          amount: cart.totalPrice + (cart.totalPrice * 0.18)
         });
         window.location.href = paymentResponse.data.paymentUrl;
       } else {
         // Cash on delivery
         await clearCart();
-        navigate(`/order-confirmation/${response.data.order._id}`);
+        navigate(`/orders/${response.data.order._id}`);
         toast.success('Order placed successfully!');
       }
     } catch (error) {
-      toast.error('Failed to place order');
+      toast.error(error.response?.data?.message || 'Failed to place order');
     } finally {
       setLoading(false);
     }
@@ -138,11 +147,14 @@ const Checkout = () => {
           <div className="flex items-center justify-between mb-8">
             {[1, 2, 3].map((s) => (
               <div key={s} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${
-                  s <= step ? 'bg-zinc-900 text-white' : 'bg-zinc-200 text-zinc-500'
-                }`}>
+                <motion.div 
+                  whileHover={{ scale: 1.1 }}
+                  className={`w-8 h-8 rounded-full flex items-center justify-center font-semibold ${
+                    s <= step ? 'bg-zinc-900 text-white' : 'bg-zinc-200 text-zinc-500'
+                  }`}
+                >
                   {s}
-                </div>
+                </motion.div>
                 <div className={`ml-2 text-sm font-medium ${
                   s <= step ? 'text-zinc-900' : 'text-zinc-500'
                 }`}>
@@ -155,7 +167,11 @@ const Checkout = () => {
 
           {/* Step 1: Shipping Address */}
           {step === 1 && (
-            <div className="space-y-6">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="space-y-6"
+            >
               <h2 className="text-xl font-bold text-zinc-900">Shipping Address</h2>
               
               {/* Existing Addresses */}
@@ -275,16 +291,20 @@ const Checkout = () => {
               >
                 Continue to Payment
               </button>
-            </div>
+            </motion.div>
           )}
 
           {/* Step 2: Payment Method */}
           {step === 2 && (
-            <div className="space-y-6">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="space-y-6"
+            >
               <h2 className="text-xl font-bold text-zinc-900">Payment Method</h2>
               
               <div className="space-y-3">
-                <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:border-zinc-900">
+                <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:border-zinc-900 transition-colors">
                   <input
                     type="radio"
                     name="payment"
@@ -299,7 +319,7 @@ const Checkout = () => {
                   </div>
                 </label>
 
-                <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:border-zinc-900">
+                <label className="flex items-center p-4 border rounded-lg cursor-pointer hover:border-zinc-900 transition-colors">
                   <input
                     type="radio"
                     name="payment"
@@ -329,12 +349,16 @@ const Checkout = () => {
                   Continue to Review
                 </button>
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* Step 3: Review Order */}
           {step === 3 && (
-            <div className="space-y-6">
+            <motion.div 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="space-y-6"
+            >
               <h2 className="text-xl font-bold text-zinc-900">Review Order</h2>
               
               {/* Shipping Address */}
@@ -369,7 +393,7 @@ const Checkout = () => {
                         {item.product.name} x {item.quantity}
                       </span>
                       <span className="font-medium text-zinc-900">
-                        {formatPrice(item.price * item.quantity)}
+                        {formatPrice((item.product.discountPrice > 0 ? item.product.discountPrice : item.product.price) * item.quantity)}
                       </span>
                     </div>
                   ))}
@@ -383,7 +407,7 @@ const Checkout = () => {
               >
                 {loading ? 'Placing Order...' : 'Place Order'}
               </button>
-            </div>
+            </motion.div>
           )}
         </div>
 
@@ -397,7 +421,7 @@ const Checkout = () => {
                 <div key={item.product._id} className="flex justify-between text-sm">
                   <span className="text-zinc-600">{item.product.name} x {item.quantity}</span>
                   <span className="font-medium text-zinc-900">
-                    {formatPrice(item.price * item.quantity)}
+                    {formatPrice((item.product.discountPrice > 0 ? item.product.discountPrice : item.product.price) * item.quantity)}
                   </span>
                 </div>
               ))}
@@ -435,6 +459,10 @@ const Checkout = () => {
               <div className="flex items-center text-sm text-zinc-600">
                 <Shield className="w-4 h-4 mr-2 text-zinc-400" />
                 100% secure payment
+              </div>
+              <div className="flex items-center text-sm text-zinc-600">
+                <CreditCard className="w-4 h-4 mr-2 text-zinc-400" />
+                Easy returns within 30 days
               </div>
             </div>
           </div>

@@ -4,6 +4,7 @@ import { Minus, Plus, Trash2, ShoppingBag, ArrowRight } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { formatPrice } from '../utils/helpers';
 import Breadcrumb from '../components/common/Breadcrumb';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const Cart = () => {
   const { cart, loading, updateQuantity, removeFromCart } = useCart();
@@ -14,7 +15,13 @@ const Cart = () => {
     if (newQuantity < 1) return;
     
     setUpdatingId(productId);
-    await updateQuantity(productId, newQuantity);
+    console.log('Updating quantity:', { productId, newQuantity });
+    
+    const success = await updateQuantity(productId, newQuantity);
+    if (!success) {
+      console.error('Failed to update quantity');
+    }
+    
     setUpdatingId(null);
   };
 
@@ -38,7 +45,11 @@ const Cart = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <Breadcrumb items={[{ label: 'Home', path: '/' }, { label: 'Cart', path: '/cart' }]} />
         
-        <div className="text-center py-16">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-center py-16"
+        >
           <div className="inline-flex items-center justify-center w-24 h-24 bg-zinc-100 rounded-full mb-6">
             <ShoppingBag className="w-12 h-12 text-zinc-400" />
           </div>
@@ -46,20 +57,22 @@ const Cart = () => {
           <p className="text-zinc-600 mb-8">Looks like you haven't added anything to your cart yet.</p>
           <Link 
             to="/shop" 
-            className="inline-flex items-center px-6 py-3 bg-zinc-900 text-white rounded-lg font-semibold hover:bg-zinc-800 transition-colors"
+            className="inline-flex items-center px-6 py-3 bg-zinc-900 text-white rounded-lg font-semibold hover:bg-zinc-800 transition-all hover:scale-105"
           >
             Start Shopping
             <ArrowRight className="ml-2 w-4 h-4" />
           </Link>
-        </div>
+        </motion.div>
       </div>
     );
   }
 
-  // Calculate real-time totals
-  const subtotal = cart.totalPrice;
+  // Real-time calculations
+  const subtotal = cart.totalPrice || 0;
   const tax = subtotal * 0.18;
   const total = subtotal + tax;
+
+  console.log('Rendering cart with total:', subtotal);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -70,81 +83,99 @@ const Cart = () => {
       <div className="grid lg:grid-cols-3 gap-8">
         {/* Cart Items */}
         <div className="lg:col-span-2 space-y-4">
-          {cart.items.map((item) => {
-            const itemPrice = item.product?.discountPrice > 0 
-              ? item.product.discountPrice 
-              : item.product?.price || 0;
-            const itemTotal = itemPrice * item.quantity;
-            const isUpdating = updatingId === item.product?._id;
+          <AnimatePresence>
+            {cart.items.map((item) => {
+              // Calculate current price (with discount if available)
+              const itemPrice = item.product?.discountPrice > 0 
+                ? item.product.discountPrice 
+                : item.product?.price || 0;
+              
+              const itemTotal = itemPrice * item.quantity;
+              const isUpdating = updatingId === item.product?._id;
 
-            return (
-              <div key={item.product?._id} className="flex gap-4 p-4 bg-white rounded-lg shadow-sm">
-                {/* Product Image */}
-                <Link to={`/product/${item.product?.slug}`} className="w-24 h-24 flex-shrink-0">
-                  <img
-                    src={item.product?.images?.[0]?.imageUrl || 'https://via.placeholder.com/100'}
-                    alt={item.product?.name}
-                    className="w-full h-full object-cover rounded-lg"
-                  />
-                </Link>
-
-                {/* Product Info */}
-                <div className="flex-1">
-                  <Link to={`/product/${item.product?.slug}`} className="font-semibold text-zinc-900 hover:text-zinc-600">
-                    {item.product?.name}
+              return (
+                <motion.div 
+                  key={item.product?._id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 20 }}
+                  className="flex gap-4 p-4 bg-white rounded-lg shadow-sm hover:shadow-md transition-shadow"
+                >
+                  {/* Product Image */}
+                  <Link to={`/product/${item.product?.slug}`} className="w-24 h-24 flex-shrink-0">
+                    <img
+                      src={item.product?.images?.[0]?.imageUrl || 'https://via.placeholder.com/100'}
+                      alt={item.product?.name}
+                      className="w-full h-full object-cover rounded-lg"
+                    />
                   </Link>
-                  <p className="text-sm text-zinc-500 mt-1">{item.product?.category?.name || 'Product'}</p>
-                  
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center border border-zinc-300 rounded-lg">
-                      <button
-                        onClick={() => handleUpdateQuantity(item.product?._id, item.quantity, -1)}
-                        disabled={item.quantity <= 1 || isUpdating}
-                        className="px-3 py-1 hover:bg-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Minus className="w-4 h-4" />
-                      </button>
-                      <span className="w-12 text-center font-medium">
-                        {isUpdating ? '...' : item.quantity}
-                      </span>
-                      <button
-                        onClick={() => handleUpdateQuantity(item.product?._id, item.quantity, 1)}
-                        disabled={item.quantity >= (item.product?.stock || 0) || isUpdating}
-                        className="px-3 py-1 hover:bg-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Plus className="w-4 h-4" />
-                      </button>
+
+                  {/* Product Info */}
+                  <div className="flex-1">
+                    <Link to={`/product/${item.product?.slug}`} className="font-semibold text-zinc-900 hover:text-zinc-600">
+                      {item.product?.name}
+                    </Link>
+                    <p className="text-sm text-zinc-500 mt-1">SKU: {item.product?.sku || 'N/A'}</p>
+                    
+                    <div className="flex items-center justify-between mt-4">
+                      <div className="flex items-center border border-zinc-300 rounded-lg">
+                        <button
+                          onClick={() => handleUpdateQuantity(item.product?._id, item.quantity, -1)}
+                          disabled={item.quantity <= 1 || isUpdating}
+                          className="px-3 py-1 hover:bg-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Minus className="w-4 h-4" />
+                        </button>
+                        <span className="w-12 text-center font-medium">
+                          {isUpdating ? (
+                            <span className="inline-block w-4 h-4 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin"></span>
+                          ) : (
+                            item.quantity
+                          )}
+                        </span>
+                        <button
+                          onClick={() => handleUpdateQuantity(item.product?._id, item.quantity, 1)}
+                          disabled={item.quantity >= (item.product?.stock || 0) || isUpdating}
+                          className="px-3 py-1 hover:bg-zinc-100 disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          <Plus className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      <div className="flex items-center gap-4">
+                        <span className="font-bold text-zinc-900">
+                          {formatPrice(itemTotal)}
+                        </span>
+                        <button
+                          onClick={() => removeFromCart(item.product?._id)}
+                          className="text-red-500 hover:text-red-600 transition-colors"
+                          disabled={isUpdating}
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
+                      </div>
                     </div>
 
-                    <div className="flex items-center gap-4">
-                      <span className="font-bold text-zinc-900">
-                        {formatPrice(itemTotal)}
-                      </span>
-                      <button
-                        onClick={() => removeFromCart(item.product?._id)}
-                        className="text-red-500 hover:text-red-600"
-                        disabled={isUpdating}
+                    {/* Savings */}
+                    {item.product?.discountPrice > 0 && (
+                      <motion.div 
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="mt-2 text-sm"
                       >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
-                    </div>
+                        <span className="text-zinc-400 line-through mr-2">
+                          {formatPrice(item.product.price * item.quantity)}
+                        </span>
+                        <span className="text-green-600">
+                          You save {formatPrice((item.product.price - item.product.discountPrice) * item.quantity)}
+                        </span>
+                      </motion.div>
+                    )}
                   </div>
-
-                  {/* Price breakdown */}
-                  {item.product?.discountPrice > 0 && (
-                    <div className="mt-2 text-sm">
-                      <span className="text-zinc-400 line-through mr-2">
-                        {formatPrice(item.product.price * item.quantity)}
-                      </span>
-                      <span className="text-green-600">
-                        You save {formatPrice((item.product.price - item.product.discountPrice) * item.quantity)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            );
-          })}
+                </motion.div>
+              );
+            })}
+          </AnimatePresence>
         </div>
 
         {/* Order Summary */}
@@ -178,7 +209,7 @@ const Cart = () => {
 
             <Link
               to="/checkout"
-              className="w-full flex items-center justify-center px-6 py-3 bg-zinc-900 text-white rounded-lg font-semibold hover:bg-zinc-800 transition-colors mb-3"
+              className="w-full flex items-center justify-center px-6 py-3 bg-zinc-900 text-white rounded-lg font-semibold hover:bg-zinc-800 transition-all hover:scale-105 mb-3"
             >
               Proceed to Checkout
             </Link>

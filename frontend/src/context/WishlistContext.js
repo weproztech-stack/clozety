@@ -5,7 +5,11 @@ import { useAuth } from './AuthContext';
 
 const WishlistContext = createContext();
 
-export const useWishlist = () => useContext(WishlistContext);
+export const useWishlist = () => {
+  const context = useContext(WishlistContext);
+  if (!context) throw new Error('useWishlist must be used within WishlistProvider');
+  return context;
+};
 
 export const WishlistProvider = ({ children }) => {
   const [wishlist, setWishlist] = useState([]);
@@ -66,15 +70,17 @@ export const WishlistProvider = ({ children }) => {
     return wishlist.some(item => item.product?._id === productId || item.product === productId);
   };
 
+  const value = {
+    wishlist,
+    loading,
+    addToWishlist,
+    removeFromWishlist,
+    isInWishlist,
+    fetchWishlist
+  };
+
   return (
-    <WishlistContext.Provider value={{
-      wishlist,
-      loading,
-      addToWishlist,
-      removeFromWishlist,
-      isInWishlist,
-      fetchWishlist
-    }}>
+    <WishlistContext.Provider value={value}>
       {children}
     </WishlistContext.Provider>
   );

@@ -24,10 +24,10 @@ export const useProducts = (initialParams = {}) => {
       
       setProducts(productsData);
       setPagination({
-        total: response.data.pagination?.total || response.data.total || productsData.length,
-        page: response.data.pagination?.page || response.data.page || 1,
-        limit: response.data.pagination?.limit || response.data.limit || 12,
-        pages: response.data.pagination?.pages || response.data.pages || Math.ceil(productsData.length / 12)
+        total: response.data.pagination?.total || productsData.length,
+        page: response.data.pagination?.page || 1,
+        limit: response.data.pagination?.limit || 12,
+        pages: response.data.pagination?.pages || Math.ceil(productsData.length / 12)
       });
       setError(null);
     } catch (err) {

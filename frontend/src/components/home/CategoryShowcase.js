@@ -2,8 +2,24 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { CATEGORIES } from '../../utils/constants';
+import { motion } from 'framer-motion';
 
 const CategoryShowcase = () => {
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
+
   return (
     <section className="py-16 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -16,26 +32,37 @@ const CategoryShowcase = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <motion.div 
+          variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true }}
+          className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4"
+        >
           {CATEGORIES.map((category) => (
-            <Link
+            <motion.div
               key={category.id}
-              to={`/shop?category=${category.id}`}
-              className="group relative overflow-hidden rounded-xl bg-gradient-to-br p-6 text-center transform transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
-              style={{
-                backgroundImage: `linear-gradient(135deg, ${category.color.split(' ')[1]} 0%, ${category.color.split(' ')[3]} 100%)`
-              }}
+              variants={itemVariants}
+              whileHover={{ y: -5 }}
             >
-              <div className="text-4xl mb-3 transform group-hover:scale-110 transition-transform">
-                {category.icon}
-              </div>
-              <h3 className="font-semibold text-white text-sm">
-                {category.name}
-              </h3>
-              <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity"></div>
-            </Link>
+              <Link
+                to={`/shop?category=${category.id}`}
+                className="group relative overflow-hidden rounded-xl bg-gradient-to-br p-6 text-center transform transition-all duration-300 hover:shadow-xl block"
+                style={{
+                  backgroundImage: `linear-gradient(135deg, ${category.color.split(' ')[1]} 0%, ${category.color.split(' ')[3]} 100%)`
+                }}
+              >
+                <div className="text-4xl mb-3 transform group-hover:scale-110 transition-transform">
+                  {category.icon}
+                </div>
+                <h3 className="font-semibold text-white text-sm">
+                  {category.name}
+                </h3>
+                <div className="absolute inset-0 bg-black opacity-0 group-hover:opacity-10 transition-opacity"></div>
+              </Link>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         <div className="text-center mt-12">
           <Link 

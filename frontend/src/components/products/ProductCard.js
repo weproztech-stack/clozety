@@ -5,6 +5,7 @@ import { formatPrice, calculateDiscount, getPrimaryImage } from '../../utils/hel
 import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
 import QuickViewModal from './QuickViewModal';
+import { motion } from 'framer-motion';
 
 const ProductCard = ({ product }) => {
   const [imageError, setImageError] = useState(false);
@@ -43,7 +44,11 @@ const ProductCard = ({ product }) => {
 
   return (
     <>
-      <div 
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.5 }}
         className="group relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
@@ -61,9 +66,13 @@ const ProductCard = ({ product }) => {
 
             {/* Discount Badge */}
             {discountPercent > 0 && (
-              <div className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full"
+              >
                 {discountPercent}% OFF
-              </div>
+              </motion.div>
             )}
 
             {/* Out of Stock Overlay */}
@@ -75,7 +84,7 @@ const ProductCard = ({ product }) => {
               </div>
             )}
 
-            {/* Quick Action Buttons - Visible on Hover */}
+            {/* Quick Action Buttons */}
             <div className={`absolute inset-x-0 bottom-0 p-4 flex justify-center gap-2 transform transition-all duration-300 ${isHovered ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
               <button
                 onClick={handleQuickView}
@@ -108,23 +117,23 @@ const ProductCard = ({ product }) => {
           </div>
 
           {/* Product Info */}
-         <div className="p-4">
-  <h3 className="text-sm font-medium text-zinc-900 mb-2 line-clamp-2 h-10">
-    {product.name}
-  </h3>
+          <div className="p-4">
+            <h3 className="text-sm font-medium text-zinc-900 mb-2 line-clamp-2 h-10">
+              {product.name}
+            </h3>
 
-  <div className="flex items-baseline gap-2 mb-2">
-    <span className="text-lg font-bold text-zinc-900">
-      {formatPrice(product.discountPrice > 0 ? product.discountPrice : product.price)}
-    </span>
-    {product.discountPrice > 0 && (
-      <span className="text-sm text-zinc-400 line-through">
-        {formatPrice(product.price)}
-      </span>
-    )}
-  </div>
+            <div className="flex items-baseline gap-2 mb-2">
+              <span className="text-lg font-bold text-zinc-900">
+                {formatPrice(finalPrice)}
+              </span>
+              {product.discountPrice > 0 && (
+                <span className="text-sm text-zinc-400 line-through">
+                  {formatPrice(product.price)}
+                </span>
+              )}
+            </div>
 
-            {/* Rating Placeholder */}
+            {/* Rating */}
             <div className="flex items-center text-sm text-zinc-500">
               <div className="flex text-yellow-400 mr-1">
                 {'★'.repeat(4)}{'☆'.repeat(1)}
@@ -133,7 +142,7 @@ const ProductCard = ({ product }) => {
             </div>
           </div>
         </Link>
-      </div>
+      </motion.div>
 
       {/* Quick View Modal */}
       {showQuickView && (

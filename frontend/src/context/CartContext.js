@@ -5,24 +5,41 @@ import { useAuth } from './AuthContext';
 
 const CartContext = createContext();
 
-export const useCart = () => useContext(CartContext);
+export const useCart = () => {
+  const context = useContext(CartContext);
+  if (!context) throw new Error('useCart must be used within CartProvider');
+  return context;
+};
 
 export const CartProvider = ({ children }) => {
   const [cart, setCart] = useState({ items: [], totalPrice: 0 });
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  // Cart calculate karne ka function
+  // Helper to calculate total price
   const calculateTotalPrice = (items) => {
     return items.reduce((total, item) => {
+      // Get the current price (discount price if available)
       const price = item.product?.discountPrice > 0 
         ? item.product.discountPrice 
         : item.product?.price || 0;
-      return total + (price * item.quantity);
+      
+      // Calculate item total
+      const itemTotal = price * (item.quantity || 1);
+      
+      console.log('Calculating:', {
+        product: item.product?.name,
+        price,
+        quantity: item.quantity,
+        itemTotal,
+        runningTotal: total + itemTotal
+      });
+      
+      return total + itemTotal;
     }, 0);
   };
 
-  // Cart fetch karna
+  // Fetch cart from backend
   const fetchCart = useCallback(async () => {
     if (!user) {
       setCart({ items: [], totalPrice: 0 });
@@ -31,19 +48,24 @@ export const CartProvider = ({ children }) => {
     
     setLoading(true);
     try {
+      console.log('Fetching cart...');
       const response = await api.get('/api/cart');
-      const cartData = response.data.cart || response.data;
+      console.log('Cart response:', response.data);
       
-      // Total price calculate karo
-      const totalPrice = calculateTotalPrice(cartData.items || []);
+      const cartData = response.data.cart || response.data;
+      const items = cartData.items || [];
+      
+      // Calculate total price
+      const totalPrice = calculateTotalPrice(items);
       
       setCart({
-        items: cartData.items || [],
+        items: items,
         totalPrice: totalPrice
       });
+      
+      console.log('Cart updated:', { items, totalPrice });
     } catch (error) {
       console.error('Error fetching cart:', error);
-      toast.error('Failed to load cart');
     } finally {
       setLoading(false);
     }
@@ -61,14 +83,18 @@ export const CartProvider = ({ children }) => {
     }
 
     try {
+      console.log('Adding to cart:', { productId, quantity });
       const response = await api.post('/api/cart', { productId, quantity });
-      const cartData = response.data.cart || response.data;
+      console.log('Add to cart response:', response.data);
       
-      // Total price calculate karo
-      const totalPrice = calculateTotalPrice(cartData.items || []);
+      const cartData = response.data.cart || response.data;
+      const items = cartData.items || [];
+      
+      // Calculate total price
+      const totalPrice = calculateTotalPrice(items);
       
       setCart({
-        items: cartData.items || [],
+        items: items,
         totalPrice: totalPrice
       });
       
@@ -81,26 +107,36 @@ export const CartProvider = ({ children }) => {
     }
   };
 
-  // Quantity update
+  // Update quantity - FIXED VERSION
   const updateQuantity = async (productId, newQuantity) => {
+    if (newQuantity < 1) return false;
+    
     try {
-      if (newQuantity < 1) return false;
+      console.log('Updating quantity:', { productId, newQuantity });
       
+      // Call backend API
       const response = await api.put(`/api/cart/${productId}`, { quantity: newQuantity });
+      console.log('Update response:', response.data);
+      
+      // Get updated cart from response
       const cartData = response.data.cart || response.data;
+      const updatedItems = cartData.items || [];
       
-      // Total price calculate karo
-      const totalPrice = calculateTotalPrice(cartData.items || []);
+      // Calculate new total price
+      const newTotalPrice = calculateTotalPrice(updatedItems);
       
+      // Update state with new values
       setCart({
-        items: cartData.items || [],
-        totalPrice: totalPrice
+        items: updatedItems,
+        totalPrice: newTotalPrice
       });
+      
+      console.log('Cart updated:', { items: updatedItems, totalPrice: newTotalPrice });
       
       return true;
     } catch (error) {
       console.error('Error updating quantity:', error);
-      toast.error('Failed to update quantity');
+      toast.error(error.response?.data?.message || 'Failed to update quantity');
       return false;
     }
   };
@@ -108,20 +144,25 @@ export const CartProvider = ({ children }) => {
   // Remove from cart
   const removeFromCart = async (productId) => {
     try {
+      console.log('Removing from cart:', productId);
       const response = await api.delete(`/api/cart/${productId}`);
-      const cartData = response.data.cart || response.data;
+      console.log('Remove response:', response.data);
       
-      // Total price calculate karo
-      const totalPrice = calculateTotalPrice(cartData.items || []);
+      const cartData = response.data.cart || response.data;
+      const updatedItems = cartData.items || [];
+      
+      // Calculate new total price
+      const newTotalPrice = calculateTotalPrice(updatedItems);
       
       setCart({
-        items: cartData.items || [],
-        totalPrice: totalPrice
+        items: updatedItems,
+        totalPrice: newTotalPrice
       });
       
       toast.success('Item removed from cart');
       return true;
     } catch (error) {
+      console.error('Error removing item:', error);
       toast.error('Failed to remove item');
       return false;
     }
@@ -130,30 +171,36 @@ export const CartProvider = ({ children }) => {
   // Clear cart
   const clearCart = async () => {
     try {
+      console.log('Clearing cart');
       await api.delete('/api/cart');
       setCart({ items: [], totalPrice: 0 });
       toast.success('Cart cleared');
       return true;
     } catch (error) {
+      console.error('Error clearing cart:', error);
       toast.error('Failed to clear cart');
       return false;
     }
   };
 
   // Cart count
-  const cartCount = cart.items?.reduce((sum, item) => sum + item.quantity, 0) || 0;
+  const cartCount = cart.items?.reduce((sum, item) => {
+    return sum + (item.quantity || 0);
+  }, 0) || 0;
+
+  const value = {
+    cart,
+    loading,
+    cartCount,
+    addToCart,
+    updateQuantity,
+    removeFromCart,
+    clearCart,
+    fetchCart
+  };
 
   return (
-    <CartContext.Provider value={{
-      cart,
-      loading,
-      cartCount,
-      addToCart,
-      updateQuantity,
-      removeFromCart,
-      clearCart,
-      fetchCart
-    }}>
+    <CartContext.Provider value={value}>
       {children}
     </CartContext.Provider>
   );

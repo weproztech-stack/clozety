@@ -17,6 +17,11 @@ router.get("/", productController.getAllProducts);
 
 router.get("/slug/:slug", productController.getProductBySlug); // before /:id
 router.get("/:id", productController.getProductById);
+
+// ProductRoute.js - Update route order
+
+
+// Make sure slug route comes BEFORE id route!
 // router.put(
 //   "/:id",
 //   upload.array("images", 3),
