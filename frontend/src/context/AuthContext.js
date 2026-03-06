@@ -43,7 +43,7 @@ export const AuthProvider = ({ children }) => {
     // Login Function
     const login = async (email, password) => {
         try {
-            const res = await api.post("/auth/login", { email, password });
+            const res = await api.post("/api/auth/login", { email, password });
             const { token, user: userData } = res.data;
 
             localStorage.setItem("clozety_token", token);
@@ -60,7 +60,7 @@ export const AuthProvider = ({ children }) => {
     // Register Function
     const register = async (name, email, password) => {
         try {
-            const res = await api.post("/auth/register", { name, email, password });
+            const res = await api.post("/api/auth/register", { name, email, password });
             const { token, user: userData } = res.data;
 
             localStorage.setItem("clozety_token", token);

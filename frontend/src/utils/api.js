@@ -1,45 +1,44 @@
-import axios from "axios";
+import axios from 'axios';
+import toast from 'react-hot-toast';
 
-// Create an Axios instance with base configuration
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 const api = axios.create({
-    baseURL: "http://localhost:5000/api",
-    headers: {
-        "Content-Type": "application/json",
-    },
-    withCredentials: true, // Send cookies if needed
+  baseURL: API_URL,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+    'Accept': 'application/json',
+  },
 });
 
-// Request Interceptor: Attach JWT token to every request if it exists
+// Request interceptor to add token
 api.interceptors.request.use(
-    (config) => {
-        const token = localStorage.getItem("clozety_token");
-        if (token) {
-            config.headers.Authorization = `Bearer ${token}`;
-        }
-        return config;
-    },
-    (error) => {
-        return Promise.reject(error);
+  (config) => {
+    const token = localStorage.getItem('clozety_token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
+    return config;
+  },
+  (error) => Promise.reject(error)
 );
 
-// Response Interceptor: Handle global errors (e.g., token expiration)
+// Response interceptor for error handling
 api.interceptors.response.use(
-    (response) => {
-        return response;
-    },
-    (error) => {
-        // If the token is invalid or expired (401 Unauthorized), we can auto-logout here
-        if (error.response && error.response.status === 401) {
-            // Avoid clearing if they are already trying to login
-            if (!error.config.url.includes("/auth/login")) {
-                localStorage.removeItem("clozety_token");
-                // Dispatching a custom event that AuthContext can listen to for UI updates
-                window.dispatchEvent(new Event("auth-expired"));
-            }
-        }
-        return Promise.reject(error);
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('clozety_token');
+      window.dispatchEvent(new Event('auth-expired'));
+      toast.error('Session expired. Please login again.');
+    } else if (error.response?.status === 500) {
+      toast.error('Server error. Please try again later.');
+    } else if (!error.response) {
+      toast.error('Network error. Check your connection.');
     }
+    return Promise.reject(error);
+  }
 );
 
 export default api;
