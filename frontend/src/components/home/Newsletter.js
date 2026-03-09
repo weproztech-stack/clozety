@@ -19,15 +19,15 @@ const Newsletter = () => {
   };
 
   return (
-    <section className="py-20 bg-gradient-to-r from-zinc-900 to-zinc-800 text-white">
+    <section className="py-16 sm:py-20 bg-gradient-to-r from-zinc-900 to-zinc-800 text-white">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <Mail className="w-12 h-12 mx-auto mb-6 text-zinc-400" />
         
-        <h2 className="text-3xl md:text-4xl font-bold mb-4">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold mb-4">
           Subscribe to Our Newsletter
         </h2>
         
-        <p className="text-lg text-zinc-300 mb-8 max-w-2xl mx-auto">
+        <p className="text-base sm:text-lg text-zinc-300 mb-8 max-w-2xl mx-auto leading-relaxed">
           Join 10,000+ subscribers and get exclusive offers, new arrivals, and insider-only discounts straight to your inbox.
         </p>
 
@@ -49,7 +49,7 @@ const Newsletter = () => {
               />
               <button
                 type="submit"
-                className="px-6 py-3 bg-white text-zinc-900 rounded-lg font-semibold hover:bg-zinc-100 transition-colors"
+                className="px-6 py-3 bg-white text-zinc-900 rounded-lg font-semibold hover:bg-zinc-100 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-zinc-900 transition-all duration-200 hover:scale-[1.03]"
               >
                 Subscribe
               </button>

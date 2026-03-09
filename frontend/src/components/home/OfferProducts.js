@@ -69,17 +69,17 @@ const OfferProducts = () => {
   };
 
   return (
-    <section className="py-16 bg-gradient-to-r from-red-50 to-orange-50">
+    <section className="py-12 sm:py-16 bg-gradient-to-r from-red-50 to-orange-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-12">
+        <div className="flex items-center justify-between mb-10">
           <div>
-            <div className="flex items-center space-x-2 mb-2">
-              <Tag className="w-6 h-6 text-red-500" />
-              <h2 className="text-3xl md:text-4xl font-bold text-zinc-900">
+            <div className="inline-flex items-center space-x-2 mb-3 border-b border-red-200 pb-2">
+              <Tag className="w-5 h-5 text-red-500" />
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-semibold text-zinc-900">
                 Special Offers
               </h2>
             </div>
-            <p className="text-lg text-zinc-600">
+            <p className="text-sm sm:text-base text-zinc-700 mt-1">
               Limited time deals with up to 50% off
             </p>
           </div>
@@ -94,7 +94,7 @@ const OfferProducts = () => {
         </div>
 
         {loading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
             {[...Array(4)].map((_, i) => (
               <ProductSkeleton key={i} />
             ))}
@@ -104,13 +104,13 @@ const OfferProducts = () => {
             <p className="text-red-500 mb-4">{error}</p>
             <button 
               onClick={fetchOfferProducts}
-              className="px-6 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600"
+              className="px-6 py-2.5 bg-red-500 text-white rounded-lg font-semibold hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition-all duration-200 hover:scale-[1.02]"
             >
               Try Again
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 sm:gap-6">
             {products.map(product => (
               <ProductCard key={product._id} product={product} />
             ))}

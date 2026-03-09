@@ -53,7 +53,7 @@ const Navbar = () => {
   return (
     <>
       <nav className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        isScrolled ? 'bg-white/95 backdrop-blur-md shadow-lg' : 'bg-white/80 backdrop-blur-sm'
+        isScrolled ? 'bg-white shadow-xl backdrop-blur-md' : 'bg-white/90 backdrop-blur-sm shadow-sm'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-14 sm:h-16 items-center">
@@ -295,6 +295,13 @@ const Navbar = () => {
 
                   {user ? (
                     <div className="border-t border-zinc-200 pt-4">
+                      <Link 
+                        to="/profile" 
+                        className="flex items-center justify-between py-2 text-sm font-medium text-zinc-700 hover:text-zinc-900 mb-2"
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <span>My Account</span>
+                      </Link>
                       <Link to="/profile" className="flex items-center text-zinc-700 py-2 hover:text-zinc-900 transition-colors" onClick={() => setIsMenuOpen(false)}>
                         <div className="w-8 h-8 bg-zinc-900 rounded-full flex items-center justify-center text-white mr-3">
                           {user.name?.charAt(0).toUpperCase()}

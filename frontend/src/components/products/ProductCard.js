@@ -6,6 +6,7 @@ import { useWishlist } from '../../context/WishlistContext';
 import { useCart } from '../../context/CartContext';
 import QuickViewModal from './QuickViewModal';
 import { motion } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 import { LazyLoadImage } from 'react-lazy-load-image-component';
 import 'react-lazy-load-image-component/src/effects/blur.css';
@@ -28,8 +29,10 @@ const ProductCard = ({ product }) => {
     e.stopPropagation();
     if (inWishlist) {
       await removeFromWishlist(product._id);
+      toast.success('Removed from wishlist');
     } else {
       await addToWishlist(product._id);
+      toast.success('Added to wishlist');
     }
   };
 
@@ -37,6 +40,7 @@ const ProductCard = ({ product }) => {
     e.preventDefault();
     e.stopPropagation();
     await addToCart(product._id, 1);
+    toast.success('Added to cart');
   };
 
   const handleQuickView = (e) => {
@@ -51,8 +55,8 @@ const ProductCard = ({ product }) => {
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        transition={{ duration: 0.5 }}
-        className="group relative bg-white rounded-xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1"
+        transition={{ duration: 0.4 }}
+        className="group relative bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-200 transform hover:-translate-y-1"
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
@@ -63,7 +67,7 @@ const ProductCard = ({ product }) => {
               alt={product.name}
               effect="blur"
               src={imageError ? 'https://via.placeholder.com/400' : (primaryImage?.imageUrl || 'https://via.placeholder.com/400')}
-              className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+              className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
               wrapperClassName="w-full h-full object-cover"
               onError={() => setImageError(true)}
             />
@@ -89,7 +93,7 @@ const ProductCard = ({ product }) => {
             )}
 
             {/* Quick Action Buttons */}
-            <div className={`absolute inset-x-0 bottom-0 p-4 flex justify-center gap-2 transform transition-all duration-300 ${isHovered ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
+            <div className={`absolute inset-x-0 bottom-0 p-4 flex justify-center gap-2 transform transition-all duration-200 ${isHovered ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'}`}>
               <button
                 onClick={handleQuickView}
                 className="flex-1 bg-white/90 backdrop-blur-sm text-zinc-900 py-2 rounded-lg font-semibold text-sm hover:bg-white transition-colors flex items-center justify-center"

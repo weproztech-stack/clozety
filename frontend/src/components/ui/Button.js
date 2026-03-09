@@ -12,7 +12,7 @@ const Button = ({
   className = '',
   ...props 
 }) => {
-  const baseClasses = 'inline-flex items-center justify-center font-semibold transition-all rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2';
+  const baseClasses = 'inline-flex items-center justify-center font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]';
   
   const variants = {
     primary: 'bg-zinc-900 text-white hover:bg-zinc-800 focus:ring-zinc-900 disabled:bg-zinc-300',

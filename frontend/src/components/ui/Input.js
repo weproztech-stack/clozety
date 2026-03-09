@@ -10,7 +10,7 @@ const Input = forwardRef(({
   className = '',
   ...props
 }, ref) => {
-  const baseClasses = 'block rounded-lg border focus:outline-none focus:ring-2 transition-all';
+  const baseClasses = 'block rounded-lg border focus:outline-none focus:ring-2 transition-all duration-200';
   const widthClass = fullWidth ? 'w-full' : '';
   const errorClass = error 
     ? 'border-red-300 focus:ring-red-500 focus:border-red-500' 

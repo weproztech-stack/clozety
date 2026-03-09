@@ -7,6 +7,8 @@ import Breadcrumb from '../components/common/Breadcrumb';
 import api from '../utils/api';
 import { buildQueryString, extractProducts } from '../utils/helpers';
 import { motion, AnimatePresence } from 'framer-motion';
+import { AlertTriangle, XCircle } from 'lucide-react';
+import { CATEGORIES } from '../utils/constants';
 
 const Shop = () => {
   const location = useLocation();
@@ -94,8 +96,47 @@ const Shop = () => {
     navigate('/shop');
   };
 
+  const activeChips = [];
+  if (filters.category) {
+    const cat = CATEGORIES.find(c => c.id === filters.category);
+    activeChips.push({
+      key: 'category',
+      label: cat ? cat.name : 'Category',
+    });
+  }
+  if (filters.minPrice || filters.maxPrice) {
+    activeChips.push({
+      key: 'price',
+      label: `₹${filters.minPrice || 0} - ₹${filters.maxPrice || '∞'}`,
+    });
+  }
+  if (filters.search) {
+    activeChips.push({
+      key: 'search',
+      label: `Search: "${filters.search}"`,
+    });
+  }
+
+  const clearChip = (key) => {
+    const updated = { ...filters };
+    if (key === 'category') updated.category = '';
+    if (key === 'price') {
+      updated.minPrice = '';
+      updated.maxPrice = '';
+    }
+    if (key === 'search') updated.search = '';
+    updated.page = 1;
+    setFilters(updated);
+    const queryString = buildQueryString(updated);
+    navigate(`/shop${queryString}`);
+  };
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <motion.div 
+      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
       <Breadcrumb 
         items={[
           { label: 'Home', path: '/' },
@@ -113,7 +154,7 @@ const Shop = () => {
 
         {/* Products Grid */}
         <div className="flex-1">
-          <div className="mb-6 flex items-center justify-between">
+          <div className="mb-4 flex items-center justify-between">
             <h1 className="text-2xl font-bold text-zinc-900">
               {filters.search ? `Search Results for "${filters.search}"` : 'All Products'}
             </h1>
@@ -121,6 +162,27 @@ const Shop = () => {
               {pagination.total} products found
             </p>
           </div>
+
+          {activeChips.length > 0 && (
+            <div className="mb-6 flex flex-wrap items-center gap-2">
+              {activeChips.map(chip => (
+                <button
+                  key={chip.key}
+                  onClick={() => clearChip(chip.key)}
+                  className="inline-flex items-center px-3 py-1 rounded-full bg-zinc-100 text-xs font-medium text-zinc-700 hover:bg-zinc-200 transition-colors"
+                >
+                  <span>{chip.label}</span>
+                  <XCircle className="w-3 h-3 ml-1" />
+                </button>
+              ))}
+              <button
+                onClick={clearFilters}
+                className="ml-2 text-xs font-medium text-red-600 hover:text-red-700"
+              >
+                Clear all
+              </button>
+            </div>
+          )}
 
           <AnimatePresence mode="wait">
             {loading ? (
@@ -140,12 +202,18 @@ const Shop = () => {
                 key="error"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="text-center py-12"
+                className="text-center py-16"
               >
-                <p className="text-red-500 mb-4">{error}</p>
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-red-50 rounded-full mb-4">
+                  <AlertTriangle className="w-10 h-10 text-red-500" />
+                </div>
+                <p className="text-red-600 mb-4 font-medium">{error}</p>
+                <p className="text-sm text-zinc-500 mb-6">
+                  Please check your connection or try refreshing the page.
+                </p>
                 <button 
                   onClick={fetchProducts}
-                  className="px-6 py-2 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800"
+                  className="px-6 py-2.5 bg-zinc-900 text-white rounded-lg font-semibold hover:bg-zinc-800 focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2 transition-all duration-200 hover:scale-[1.02]"
                 >
                   Try Again
                 </button>
@@ -186,7 +254,7 @@ const Shop = () => {
           </AnimatePresence>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 

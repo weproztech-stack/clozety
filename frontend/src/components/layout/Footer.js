@@ -74,7 +74,7 @@ const Footer = () => {
           {/* Quick Links */}
           <div>
             <h4 className="text-white font-semibold mb-4">Quick Links</h4>
-            <ul className="space-y-2">
+            <ul className="space-y-2 leading-relaxed">
               {['About Us', 'Contact Us', 'FAQs', 'Shipping Info', 'Returns Policy'].map((item, idx) => (
                 <li key={idx}>
                   <Link 
@@ -92,7 +92,7 @@ const Footer = () => {
           {/* Categories */}
           <div>
             <h4 className="text-white font-semibold mb-4">Categories</h4>
-            <ul className="space-y-2">
+            <ul className="space-y-2 leading-relaxed">
               {['Electronics', 'Fashion', 'Home & Living', 'Beauty', 'Sports'].map((item, idx) => (
                 <li key={idx}>
                   <Link 
@@ -110,7 +110,7 @@ const Footer = () => {
           {/* Contact */}
           <div>
             <h4 className="text-white font-semibold mb-4">Contact Us</h4>
-            <ul className="space-y-3">
+            <ul className="space-y-3 leading-relaxed">
               <li className="flex items-start space-x-3 group">
                 <MapPin className="w-5 h-5 text-zinc-400 flex-shrink-0 mt-0.5 group-hover:text-white transition-colors" />
                 <span className="text-sm text-zinc-400 group-hover:text-zinc-300 transition-colors">123 Fashion Street, Mumbai - 400001</span>
@@ -131,7 +131,7 @@ const Footer = () => {
         <div className="border-t border-zinc-800 mt-12 pt-8">
           <div className="max-w-md mx-auto text-center">
             <h4 className="text-white font-semibold mb-2">Subscribe to Our Newsletter</h4>
-            <p className="text-sm text-zinc-400 mb-4">Get 10% off on your first order</p>
+            <p className="text-sm text-zinc-400 mb-4 leading-relaxed">Get 10% off on your first order</p>
             <form className="flex flex-col sm:flex-row gap-3 sm:gap-2" onSubmit={(e) => e.preventDefault()}>
               <input
                 type="email"

@@ -21,6 +21,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import api from '../utils/api';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast from 'react-hot-toast';
 
 const ProductDetail = () => {
   const { slug } = useParams();
@@ -87,19 +88,26 @@ const ProductDetail = () => {
 
   const handleAddToCart = () => {
     addToCart(product._id, quantity);
+    toast.success('Added to cart');
   };
 
   const handleWishlistToggle = () => {
     if (isInWishlist(product._id)) {
       removeFromWishlist(product._id);
+      toast.success('Removed from wishlist');
     } else {
       addToWishlist(product._id);
+      toast.success('Added to wishlist');
     }
   };
 
   if (loading) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <motion.div 
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
         <div className="animate-pulse">
           <div className="h-4 bg-zinc-200 rounded w-48 mb-8"></div>
           <div className="grid md:grid-cols-2 gap-12">
@@ -112,19 +120,23 @@ const ProductDetail = () => {
             </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     );
   }
 
   if (error || !product) {
     return (
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
+      <motion.div 
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
         <h2 className="text-2xl font-bold text-zinc-900 mb-4">Product Not Found</h2>
         <p className="text-zinc-600 mb-8">{error || 'The product you are looking for does not exist.'}</p>
         <Link to="/shop" className="px-6 py-3 bg-zinc-900 text-white rounded-lg hover:bg-zinc-800 transition-colors">
           Continue Shopping
         </Link>
-      </div>
+      </motion.div>
     );
   }
 
@@ -133,7 +145,11 @@ const ProductDetail = () => {
   const inWishlist = isInWishlist(product._id);
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <motion.div 
+      className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+    >
       {/* Breadcrumb */}
       <Breadcrumb
         items={[
@@ -145,15 +161,15 @@ const ProductDetail = () => {
       />
 
       {/* Product Main */}
-      <div className="grid md:grid-cols-2 gap-12 mt-8">
+      <div className="grid md:grid-cols-2 gap-10 lg:gap-16 mt-8 items-start">
         {/* Image Gallery */}
         <div>
-          <div className="aspect-square bg-zinc-100 rounded-2xl overflow-hidden mb-4 relative group">
+          <div className="aspect-square bg-zinc-100 rounded-2xl overflow-hidden mb-4 relative group cursor-zoom-in">
             <LazyLoadImage
               alt={product.name}
               effect="blur"
               src={selectedImage?.imageUrl || product.images?.[0]?.imageUrl}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover transform transition-transform duration-500 group-hover:scale-105"
               wrapperClassName="w-full h-full object-cover"
             />
 
@@ -203,7 +219,7 @@ const ProductDetail = () => {
 
         {/* Product Info */}
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900 mb-2">{product.name}</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-zinc-900 mb-3">{product.name}</h1>
 
           {/* Rating */}
           <div className="flex items-center mb-4">
@@ -218,7 +234,7 @@ const ProductDetail = () => {
           {/* Price */}
           <div className="mb-6">
             <div className="flex items-baseline gap-3">
-              <span className="text-4xl font-bold text-zinc-900">
+              <span className="text-3xl sm:text-4xl font-bold text-zinc-900">
                 {formatPrice(finalPrice)}
               </span>
               {product.discountPrice > 0 && (
@@ -397,14 +413,14 @@ const ProductDetail = () => {
       {relatedProducts.length > 0 && (
         <div className="mt-16">
           <h2 className="text-2xl font-bold text-zinc-900 mb-8">You May Also Like</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6">
             {relatedProducts.map(related => (
               <ProductCard key={related._id} product={related} />
             ))}
           </div>
         </div>
       )}
-    </div>
+    </motion.div>
   );
 };
 

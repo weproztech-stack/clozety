@@ -21,7 +21,7 @@ const ProductFilters = ({ filters, onFilterChange, onClearFilters }) => {
   };
 
   const FiltersContent = () => (
-    <div className="space-y-6">
+    <div className="space-y-6 text-sm">
       {/* Categories */}
       <div>
         <h4 className="font-semibold text-zinc-900 mb-3">Categories</h4>
@@ -115,15 +115,17 @@ const ProductFilters = ({ filters, onFilterChange, onClearFilters }) => {
   return (
     <>
       {/* Desktop Filters */}
-      <div className="hidden lg:block w-64 flex-shrink-0">
-        <FiltersContent />
+      <div className="hidden lg:block w-72 flex-shrink-0 lg:sticky lg:top-24 self-start">
+        <div className="bg-white rounded-xl border border-zinc-200 shadow-sm p-5 space-y-6">
+          <FiltersContent />
+        </div>
       </div>
 
       {/* Mobile Filter Button */}
       <div className="lg:hidden mb-4">
         <button
           onClick={() => setIsOpen(true)}
-          className="w-full flex items-center justify-center px-4 py-2 bg-white border border-zinc-300 rounded-lg text-zinc-700 hover:bg-zinc-50"
+          className="w-full flex items-center justify-center px-4 py-2 bg-white border border-zinc-300 rounded-lg text-sm font-medium text-zinc-700 hover:bg-zinc-50 active:scale-[0.98] transition-all duration-200"
         >
           <SlidersHorizontal className="w-4 h-4 mr-2" />
           Filters & Sort
@@ -134,7 +136,7 @@ const ProductFilters = ({ filters, onFilterChange, onClearFilters }) => {
       {isOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/50" onClick={() => setIsOpen(false)}></div>
-          <div className="absolute right-0 top-0 h-full w-80 bg-white p-6 overflow-auto">
+          <div className="absolute right-0 top-0 h-full w-80 bg-white p-6 overflow-auto shadow-xl">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-bold">Filters</h3>
               <button onClick={() => setIsOpen(false)}>
