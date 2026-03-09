@@ -24,6 +24,7 @@ const Navbar = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [showCategories, setShowCategories] = useState(false);
+  const [isMobileCategoriesOpen, setIsMobileCategoriesOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const navigate = useNavigate();
 
@@ -55,10 +56,10 @@ const Navbar = () => {
         isScrolled ? 'bg-white/95 backdrop-blur-md shadow-lg' : 'bg-white/80 backdrop-blur-sm'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between h-16 items-center">
+          <div className="flex justify-between h-14 sm:h-16 items-center">
             {/* Logo */}
             <Link to="/" className="flex-shrink-0 flex items-center group">
-              <span className="text-2xl font-bold bg-gradient-to-r from-zinc-900 to-zinc-600 bg-clip-text text-transparent group-hover:from-zinc-800 group-hover:to-zinc-500 transition-all">
+              <span className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-zinc-900 to-zinc-600 bg-clip-text text-transparent group-hover:from-zinc-800 group-hover:to-zinc-500 transition-all">
                 CLOZETY
               </span>
             </Link>
@@ -121,7 +122,7 @@ const Navbar = () => {
             </div>
 
             {/* Right Icons */}
-            <div className="flex items-center space-x-5">
+            <div className="flex items-center space-x-3 sm:space-x-5">
               {/* Search Button */}
               <motion.button 
                 whileHover={{ scale: 1.1 }}
@@ -233,7 +234,7 @@ const Navbar = () => {
               animate={{ opacity: 1, height: 'auto' }}
               exit={{ opacity: 0, height: 0 }}
               transition={{ duration: 0.3 }}
-              className="md:hidden border-t border-zinc-200 bg-white overflow-hidden"
+              className="md:hidden border-t border-zinc-200 bg-white overflow-y-auto max-h-[calc(100vh-3.5rem)] sm:max-h-[calc(100vh-4rem)]"
             >
               <div className="px-4 py-4">
                 <div className="flex flex-col space-y-3">
@@ -255,20 +256,41 @@ const Navbar = () => {
                   </Link>
                   
                   <div className="border-t border-zinc-200 pt-4">
-                    <p className="text-sm font-medium text-zinc-500 mb-2">Categories</p>
-                    <div className="space-y-2">
-                      {CATEGORIES.map(cat => (
-                        <Link
-                          key={cat.id}
-                          to={`/shop?category=${cat.id}`}
-                          className="flex items-center py-2 text-zinc-700 hover:text-zinc-900 transition-colors"
-                          onClick={() => setIsMenuOpen(false)}
+                    <button
+                      type="button"
+                      className="w-full flex items-center justify-between py-2 text-sm font-medium text-zinc-700 hover:text-zinc-900"
+                      onClick={() => setIsMobileCategoriesOpen(prev => !prev)}
+                    >
+                      <span>Categories</span>
+                      <ChevronDown
+                        className={`ml-2 w-4 h-4 transition-transform ${
+                          isMobileCategoriesOpen ? 'rotate-180' : ''
+                        }`}
+                      />
+                    </button>
+                    <AnimatePresence>
+                      {isMobileCategoriesOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: 'auto' }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="mt-2 space-y-2"
                         >
-                          <span className="mr-3 text-xl">{cat.icon}</span>
-                          <span className="text-sm">{cat.name}</span>
-                        </Link>
-                      ))}
-                    </div>
+                          {CATEGORIES.map(cat => (
+                            <Link
+                              key={cat.id}
+                              to={`/shop?category=${cat.id}`}
+                              className="flex items-center py-2 text-zinc-700 hover:text-zinc-900 transition-colors"
+                              onClick={() => setIsMenuOpen(false)}
+                            >
+                              <span className="mr-3 text-xl">{cat.icon}</span>
+                              <span className="text-sm">{cat.name}</span>
+                            </Link>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
 
                   {user ? (

@@ -21,21 +21,21 @@ const Footer = () => {
       <div className="border-b border-zinc-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="flex items-center justify-center md:justify-start space-x-3 group">
+            <div className="flex items-center justify-center md:justify-start space-x-3 group text-center md:text-left">
               <Truck className="w-6 h-6 text-zinc-400 group-hover:text-white transition-colors" />
               <div>
                 <h4 className="text-white font-semibold">Free Shipping</h4>
                 <p className="text-sm text-zinc-400">On orders above ₹999</p>
               </div>
             </div>
-            <div className="flex items-center justify-center md:justify-start space-x-3 group">
+            <div className="flex items-center justify-center md:justify-start space-x-3 group text-center md:text-left">
               <Shield className="w-6 h-6 text-zinc-400 group-hover:text-white transition-colors" />
               <div>
                 <h4 className="text-white font-semibold">Secure Payment</h4>
                 <p className="text-sm text-zinc-400">100% secure transactions</p>
               </div>
             </div>
-            <div className="flex items-center justify-center md:justify-start space-x-3 group">
+            <div className="flex items-center justify-center md:justify-start space-x-3 group text-center md:text-left">
               <CreditCard className="w-6 h-6 text-zinc-400 group-hover:text-white transition-colors" />
               <div>
                 <h4 className="text-white font-semibold">Easy Returns</h4>
@@ -55,7 +55,7 @@ const Footer = () => {
             <p className="text-sm text-zinc-400 mb-4 leading-relaxed">
               Your premier destination for modern fashion. Quality products, exceptional service, and timeless style.
             </p>
-            <div className="flex space-x-4">
+            <div className="flex space-x-4 justify-center sm:justify-start">
               <a href="#" className="text-zinc-400 hover:text-white transition-all hover:scale-110">
                 <Facebook className="w-5 h-5" />
               </a>
@@ -132,13 +132,13 @@ const Footer = () => {
           <div className="max-w-md mx-auto text-center">
             <h4 className="text-white font-semibold mb-2">Subscribe to Our Newsletter</h4>
             <p className="text-sm text-zinc-400 mb-4">Get 10% off on your first order</p>
-            <form className="flex gap-2" onSubmit={(e) => e.preventDefault()}>
+            <form className="flex flex-col sm:flex-row gap-3 sm:gap-2" onSubmit={(e) => e.preventDefault()}>
               <input
                 type="email"
                 placeholder="Enter your email"
-                className="flex-1 px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-600 transition-all"
+                className="w-full sm:flex-1 px-4 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-zinc-600 transition-all"
               />
-              <button className="px-6 py-2 bg-white text-zinc-900 rounded-lg font-semibold hover:bg-zinc-100 transition-all hover:scale-105">
+              <button className="w-full sm:w-auto px-6 py-2 bg-white text-zinc-900 rounded-lg font-semibold hover:bg-zinc-100 transition-all hover:scale-105">
                 Subscribe
               </button>
             </form>
