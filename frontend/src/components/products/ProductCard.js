@@ -7,11 +7,14 @@ import { useCart } from '../../context/CartContext';
 import QuickViewModal from './QuickViewModal';
 import { motion } from 'framer-motion';
 
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
+
 const ProductCard = ({ product }) => {
   const [imageError, setImageError] = useState(false);
   const [showQuickView, setShowQuickView] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-  
+
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const { addToCart } = useCart();
 
@@ -44,7 +47,7 @@ const ProductCard = ({ product }) => {
 
   return (
     <>
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
@@ -56,17 +59,18 @@ const ProductCard = ({ product }) => {
         <Link to={`/product/${product.slug || product._id}`} className="block">
           {/* Image Container */}
           <div className="relative aspect-square overflow-hidden bg-zinc-100">
-            <img
-              src={imageError ? 'https://via.placeholder.com/400' : (primaryImage?.imageUrl || 'https://via.placeholder.com/400')}
+            <LazyLoadImage
               alt={product.name}
+              effect="blur"
+              src={imageError ? 'https://via.placeholder.com/400' : (primaryImage?.imageUrl || 'https://via.placeholder.com/400')}
               className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+              wrapperClassName="w-full h-full object-cover"
               onError={() => setImageError(true)}
-              loading="lazy"
             />
 
             {/* Discount Badge */}
             {discountPercent > 0 && (
-              <motion.div 
+              <motion.div
                 initial={{ scale: 0 }}
                 animate={{ scale: 1 }}
                 className="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full"
@@ -106,11 +110,10 @@ const ProductCard = ({ product }) => {
             {/* Wishlist Button */}
             <button
               onClick={handleWishlistToggle}
-              className={`absolute top-3 right-3 p-2 rounded-full transition-all transform hover:scale-110 ${
-                inWishlist 
-                  ? 'bg-red-500 text-white' 
+              className={`absolute top-3 right-3 p-2 rounded-full transition-all transform hover:scale-110 ${inWishlist
+                  ? 'bg-red-500 text-white'
                   : 'bg-white/80 backdrop-blur-sm text-zinc-700 hover:bg-white'
-              }`}
+                }`}
             >
               <Heart className={`w-4 h-4 ${inWishlist ? 'fill-current' : ''}`} />
             </button>
@@ -146,9 +149,9 @@ const ProductCard = ({ product }) => {
 
       {/* Quick View Modal */}
       {showQuickView && (
-        <QuickViewModal 
-          product={product} 
-          onClose={() => setShowQuickView(false)} 
+        <QuickViewModal
+          product={product}
+          onClose={() => setShowQuickView(false)}
         />
       )}
     </>

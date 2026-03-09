@@ -1,17 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { 
-  Heart, 
-  ShoppingBag, 
-  Minus, 
-  Plus, 
-  Truck, 
-  Shield, 
+import {
+  Heart,
+  ShoppingBag,
+  Minus,
+  Plus,
+  Truck,
+  Shield,
   RotateCcw,
   Star,
   ChevronLeft,
   ChevronRight
 } from 'lucide-react';
+import { LazyLoadImage } from 'react-lazy-load-image-component';
+import 'react-lazy-load-image-component/src/effects/blur.css';
 import ProductCard from '../components/products/ProductCard';
 import Breadcrumb from '../components/common/Breadcrumb';
 import { formatPrice, calculateDiscount } from '../utils/helpers';
@@ -43,7 +45,7 @@ const ProductDetail = () => {
     try {
       // Check if slug is MongoDB ObjectId
       const isObjectId = /^[0-9a-fA-F]{24}$/.test(slug);
-      
+
       let response;
       if (isObjectId) {
         // If it's an ID, use ID endpoint
@@ -52,11 +54,11 @@ const ProductDetail = () => {
         // If it's a slug, use slug endpoint
         response = await api.get(`/api/products/slug/${slug}`);
       }
-      
+
       const productData = response.data.data || response.data;
       setProduct(productData);
       setSelectedImage(productData.images?.find(img => img.isPrimary) || productData.images?.[0]);
-      
+
       // Fetch related products
       if (productData.categories?.length > 0) {
         try {
@@ -133,13 +135,13 @@ const ProductDetail = () => {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Breadcrumb */}
-      <Breadcrumb 
+      <Breadcrumb
         items={[
           { label: 'Home', path: '/' },
           { label: 'Shop', path: '/shop' },
           { label: product.categories?.[0]?.name || 'Product', path: `/shop?category=${product.categories?.[0]?._id}` },
           { label: product.name, path: '#' }
-        ]} 
+        ]}
       />
 
       {/* Product Main */}
@@ -147,16 +149,18 @@ const ProductDetail = () => {
         {/* Image Gallery */}
         <div>
           <div className="aspect-square bg-zinc-100 rounded-2xl overflow-hidden mb-4 relative group">
-            <img
-              src={selectedImage?.imageUrl || product.images?.[0]?.imageUrl}
+            <LazyLoadImage
               alt={product.name}
+              effect="blur"
+              src={selectedImage?.imageUrl || product.images?.[0]?.imageUrl}
               className="w-full h-full object-cover"
+              wrapperClassName="w-full h-full object-cover"
             />
-            
+
             {/* Navigation Buttons */}
             {product.images?.length > 1 && (
               <>
-                <button 
+                <button
                   onClick={() => {
                     const currentIndex = product.images.findIndex(img => img._id === selectedImage?._id);
                     const prevIndex = currentIndex === 0 ? product.images.length - 1 : currentIndex - 1;
@@ -166,7 +170,7 @@ const ProductDetail = () => {
                 >
                   <ChevronLeft className="w-5 h-5" />
                 </button>
-                <button 
+                <button
                   onClick={() => {
                     const currentIndex = product.images.findIndex(img => img._id === selectedImage?._id);
                     const nextIndex = currentIndex === product.images.length - 1 ? 0 : currentIndex + 1;
@@ -187,9 +191,8 @@ const ProductDetail = () => {
                 <button
                   key={index}
                   onClick={() => setSelectedImage(image)}
-                  className={`aspect-square rounded-lg overflow-hidden border-2 transition-colors ${
-                    selectedImage?._id === image._id ? 'border-zinc-900' : 'border-transparent hover:border-zinc-300'
-                  }`}
+                  className={`aspect-square rounded-lg overflow-hidden border-2 transition-colors ${selectedImage?._id === image._id ? 'border-zinc-900' : 'border-transparent hover:border-zinc-300'
+                    }`}
                 >
                   <img src={image.imageUrl} alt="" className="w-full h-full object-cover" />
                 </button>
@@ -201,7 +204,7 @@ const ProductDetail = () => {
         {/* Product Info */}
         <div>
           <h1 className="text-3xl font-bold text-zinc-900 mb-2">{product.name}</h1>
-          
+
           {/* Rating */}
           <div className="flex items-center mb-4">
             <div className="flex text-yellow-400 mr-2">
@@ -287,11 +290,10 @@ const ProductDetail = () => {
             </button>
             <button
               onClick={handleWishlistToggle}
-              className={`p-3 border-2 rounded-lg transition-all hover:scale-105 ${
-                inWishlist
-                  ? 'border-red-500 bg-red-50 text-red-500 hover:bg-red-100'
-                  : 'border-zinc-300 text-zinc-700 hover:bg-zinc-50'
-              }`}
+              className={`p-3 border-2 rounded-lg transition-all hover:scale-105 ${inWishlist
+                ? 'border-red-500 bg-red-50 text-red-500 hover:bg-red-100'
+                : 'border-zinc-300 text-zinc-700 hover:bg-zinc-50'
+                }`}
             >
               <Heart className={`w-5 h-5 ${inWishlist ? 'fill-current' : ''}`} />
             </button>
@@ -322,11 +324,10 @@ const ProductDetail = () => {
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`px-6 py-3 font-medium text-sm transition-colors relative ${
-                activeTab === tab
-                  ? 'text-zinc-900 border-b-2 border-zinc-900'
-                  : 'text-zinc-500 hover:text-zinc-700'
-              }`}
+              className={`px-6 py-3 font-medium text-sm transition-colors relative ${activeTab === tab
+                ? 'text-zinc-900 border-b-2 border-zinc-900'
+                : 'text-zinc-500 hover:text-zinc-700'
+                }`}
             >
               {tab.charAt(0).toUpperCase() + tab.slice(1)}
             </button>
