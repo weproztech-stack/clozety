@@ -8,7 +8,7 @@ const getCart = async (req, res) => {
     try {
         const cart = await Cart.findOne({ user: req.user.id }).populate(
             "items.product",
-            "name price discountPrice images slug"
+            "name price discountPrice images slug stock"
         );
 
         if (!cart) {
@@ -70,7 +70,24 @@ const addToCart = async (req, res) => {
             await cart.save();
         }
 
-        res.status(200).json({ message: "Item added to cart", cart });
+        // Re-fetch cart with populated product fields for frontend
+        const populatedCart = await Cart.findOne({ user: req.user.id }).populate(
+            "items.product",
+            "name price discountPrice images slug stock"
+        );
+
+        const totalPrice = populatedCart.items.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0
+        );
+
+        res.status(200).json({
+            message: "Item added to cart",
+            cart: {
+                items: populatedCart.items,
+                totalPrice,
+            },
+        });
     } catch (err) {
         res.status(500).json({ message: "Server error", error: err.message });
     }
@@ -99,7 +116,24 @@ const updateCartItem = async (req, res) => {
         item.quantity = quantity;
         await cart.save();
 
-        res.status(200).json({ message: "Cart updated", cart });
+        // Re-fetch cart with populated product fields for frontend
+        const populatedCart = await Cart.findOne({ user: req.user.id }).populate(
+            "items.product",
+            "name price discountPrice images slug stock"
+        );
+
+        const totalPrice = populatedCart.items.reduce(
+            (sum, item) => sum + item.price * item.quantity,
+            0
+        );
+
+        res.status(200).json({
+            message: "Cart updated",
+            cart: {
+                items: populatedCart.items,
+                totalPrice,
+            },
+        });
     } catch (err) {
         res.status(500).json({ message: "Server error", error: err.message });
     }
@@ -118,7 +152,27 @@ const removeCartItem = async (req, res) => {
         );
 
         await cart.save();
-        res.status(200).json({ message: "Item removed from cart", cart });
+
+        // Re-fetch cart with populated product fields for frontend
+        const populatedCart = await Cart.findOne({ user: req.user.id }).populate(
+            "items.product",
+            "name price discountPrice images slug stock"
+        );
+
+        const totalPrice = populatedCart
+            ? populatedCart.items.reduce(
+                  (sum, item) => sum + item.price * item.quantity,
+                  0
+              )
+            : 0;
+
+        res.status(200).json({
+            message: "Item removed from cart",
+            cart: {
+                items: populatedCart ? populatedCart.items : [],
+                totalPrice,
+            },
+        });
     } catch (err) {
         res.status(500).json({ message: "Server error", error: err.message });
     }
@@ -130,12 +184,20 @@ const removeCartItem = async (req, res) => {
 const clearCart = async (req, res) => {
     try {
         const cart = await Cart.findOne({ user: req.user.id });
-        if (!cart) return res.status(404).json({ message: "Cart not found" });
+        if (!cart) {
+            return res.status(200).json({
+                message: "Cart already empty",
+                cart: { items: [], totalPrice: 0 },
+            });
+        }
 
         cart.items = [];
         await cart.save();
 
-        res.status(200).json({ message: "Cart cleared" });
+        res.status(200).json({
+            message: "Cart cleared",
+            cart: { items: [], totalPrice: 0 },
+        });
     } catch (err) {
         res.status(500).json({ message: "Server error", error: err.message });
     }
