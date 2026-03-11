@@ -4,6 +4,7 @@ const Promotion = require("../Models/ProductModel/Promotion");
 const Category = require("../Models/ProductModel/Category");
 const cloudinary = require("../Config/cloudinary");
 const mongoose = require("mongoose");
+
 // Helper: format API response
 const sendResponse = (res, success, message, data = null, status = 200) => {
   const response = { success, message: success ? message : undefined };
@@ -15,8 +16,43 @@ const sendResponse = (res, success, message, data = null, status = 200) => {
   return res.status(status).json(response);
 };
 
-// ✅ WHY: Validate ObjectId
+// Validate ObjectId
 const isValidObjectId = (id) => mongoose.Types.ObjectId.isValid(id);
+
+// Helper: Extract Cloudinary public ID from URL
+const extractCloudinaryPublicId = (url) => {
+  if (!url) return null;
+  try {
+    const parts = url.split('/');
+    const filename = parts[parts.length - 1];
+    const publicId = filename.split('.')[0];
+    // Get the folder path (everything after 'upload/')
+    const uploadIndex = url.indexOf('/upload/');
+    if (uploadIndex !== -1) {
+      const pathPart = url.substring(uploadIndex + 8); // 8 = length of '/upload/'
+      const folderPath = pathPart.substring(0, pathPart.lastIndexOf('/'));
+      return `${folderPath}/${publicId}`;
+    }
+    return `products/${publicId}`;
+  } catch (error) {
+    console.error("Error extracting publicId:", error);
+    return null;
+  }
+};
+
+// Helper: Delete image from Cloudinary
+const deleteCloudinaryImage = async (cloudinaryId) => {
+  try {
+    if (cloudinaryId) {
+      const result = await cloudinary.uploader.destroy(cloudinaryId);
+      return result.result === 'ok';
+    }
+    return false;
+  } catch (error) {
+    console.error("Cloudinary delete error:", error);
+    return false;
+  }
+};
 
 // ========================
 // 1️⃣ CREATE PRODUCT
@@ -39,7 +75,7 @@ exports.createProduct = async (req, res) => {
       metaDescription
     } = req.body;
 
-    // ✅ WHY: Comprehensive validation
+    // Comprehensive validation
     if (!name?.trim()) {
       return sendResponse(res, false, "Product name is required", null, 400);
     }
@@ -52,7 +88,7 @@ exports.createProduct = async (req, res) => {
       return sendResponse(res, false, "Discount price must be less than regular price", null, 400);
     }
 
-    // ✅ WHY: Validate categories exist
+    // Validate categories exist
     if (categories?.length) {
       const validCategories = await Category.find({
         _id: { $in: categories },
@@ -85,16 +121,17 @@ exports.createProduct = async (req, res) => {
       tags: tags || [],
       metaTitle: metaTitle || name.substring(0, 60),
       metaDescription: metaDescription || description?.substring(0, 160),
-      status: "draft" // ✅ WHY: Start as draft until images added
+      status: "draft" // Start as draft until images added
     };
 
     const [product] = await Product.create([productData], { session });
 
-    // Handle images
+    // Handle images with Cloudinary
     if (req.files?.length > 0) {
       const images = req.files.map((file, index) => ({
         productId: product._id,
-        imageUrl: file.path,
+        imageUrl: file.path, // Cloudinary URL from multer-storage-cloudinary
+        cloudinaryId: file.filename || extractCloudinaryPublicId(file.path), // Store cloudinary ID
         altText: `${product.name} - Image ${index + 1}`,
         isPrimary: index === 0,
         sortOrder: index
@@ -102,7 +139,7 @@ exports.createProduct = async (req, res) => {
 
       await ProductImage.insertMany(images, { session });
 
-      // ✅ WHY: Auto-publish if images added
+      // Auto-publish if images added
       product.status = "active";
       await product.save({ session });
     }
@@ -142,7 +179,7 @@ exports.getAllProducts = async (req, res) => {
     } = req.query;
 
     const pageNumber = Math.max(1, Number(page));
-    const limitNumber = Math.min(50, Math.max(1, Number(limit))); // ✅ WHY: Limit max items
+    const limitNumber = Math.min(50, Math.max(1, Number(limit)));
     const skip = (pageNumber - 1) * limitNumber;
 
     let filter = { isDeleted: false };
@@ -189,7 +226,6 @@ exports.getAllProducts = async (req, res) => {
       if (productIds.length) {
         filter._id = { $in: productIds };
       } else {
-        // ✅ WHY: Return empty if no products with this promotion
         return sendResponse(res, true, "Products fetched", {
           data: [],
           pagination: {
@@ -231,7 +267,6 @@ exports.getAllProducts = async (req, res) => {
 
     products.forEach(p => {
       p.images = imageMap[p._id.toString()] || [];
-      // ✅ WHY: Add computed price
       p.finalPrice = p.discountPrice > 0 ? p.discountPrice : p.price;
     });
 
@@ -290,8 +325,6 @@ exports.getProductById = async (req, res) => {
     product.images = images;
     product.promotions = promotions;
     product.finalPrice = product.discountPrice > 0 ? product.discountPrice : product.price;
-
-    // ✅ WHY: Check if in stock
     product.inStock = product.stock > 0;
 
     sendResponse(res, true, "Product fetched successfully", product);
@@ -302,7 +335,7 @@ exports.getProductById = async (req, res) => {
 };
 
 // ========================
-// 4️⃣ UPDATE PRODUCT
+// 4️⃣ UPDATE PRODUCT (with Cloudinary image management)
 // ========================
 exports.updateProduct = async (req, res) => {
   const session = await mongoose.startSession();
@@ -322,12 +355,12 @@ exports.updateProduct = async (req, res) => {
 
     const updates = req.body;
 
-    // ✅ WHY: Validate price if updating
+    // Validate price if updating
     if (updates.price && updates.price <= 0) {
       return sendResponse(res, false, "Price must be greater than 0", null, 400);
     }
 
-    // ✅ WHY: Validate discount price
+    // Validate discount price
     if (updates.discountPrice !== undefined) {
       const finalPrice = updates.price || product.price;
       if (updates.discountPrice >= finalPrice) {
@@ -335,7 +368,7 @@ exports.updateProduct = async (req, res) => {
       }
     }
 
-    // ✅ WHY: Check SKU uniqueness if updating
+    // Check SKU uniqueness if updating
     if (updates.sku && updates.sku !== product.sku) {
       const existingSku = await Product.findOne({
         sku: updates.sku,
@@ -370,8 +403,18 @@ exports.updateProduct = async (req, res) => {
 
     // Handle new images if provided
     if (req.files?.length > 0) {
-      // ✅ WHY: Option to replace or add images
+      // Option to replace or add images
       if (req.body.replaceImages === "true") {
+        // Delete old images from Cloudinary first
+        const oldImages = await ProductImage.find({ productId: product._id }).session(session);
+        
+        for (const oldImage of oldImages) {
+          if (oldImage.cloudinaryId) {
+            await cloudinary.deleteImage(oldImage.cloudinaryId);
+          }
+        }
+        
+        // Then delete from database
         await ProductImage.deleteMany({ productId: product._id }, { session });
       }
 
@@ -380,8 +423,9 @@ exports.updateProduct = async (req, res) => {
       const images = req.files.map((file, index) => ({
         productId: product._id,
         imageUrl: file.path,
+        cloudinaryId: file.filename || extractCloudinaryPublicId(file.path),
         altText: `${product.name} - Image ${currentImageCount + index + 1}`,
-        isPrimary: currentImageCount === 0 && index === 0, // First image becomes primary if no images exist
+        isPrimary: currentImageCount === 0 && index === 0,
         sortOrder: currentImageCount + index
       }));
 
@@ -413,7 +457,7 @@ exports.updateProduct = async (req, res) => {
 };
 
 // ========================
-// 5️⃣ DELETE PRODUCT (Soft Delete with Cascade)
+// 5️⃣ DELETE PRODUCT (Soft Delete with Cascade and Cloudinary cleanup)
 // ========================
 exports.deleteProduct = async (req, res) => {
   const session = await mongoose.startSession();
@@ -431,20 +475,38 @@ exports.deleteProduct = async (req, res) => {
       return sendResponse(res, false, "Product not found", null, 404);
     }
 
+    // Get all images for this product to delete from Cloudinary
+    const images = await ProductImage.find({ productId: id }).session(session);
+
     // Soft delete product
     product.isDeleted = true;
     product.status = "inactive";
     await product.save({ session });
 
-    // ✅ WHY: Deactivate all active promotions
+    // Deactivate all active promotions
     await Promotion.updateMany(
       { productId: id, isActive: true },
       { isActive: false },
       { session }
     );
 
-    await session.commitTransaction();
-    session.endSession();
+    // Delete images from Cloudinary (don't wait for this to complete)
+    // We do this after transaction commit to avoid slowing down the response
+    session.commitTransaction().then(async () => {
+      session.endSession();
+      
+      // Delete images from Cloudinary asynchronously
+      for (const image of images) {
+        if (image.cloudinaryId) {
+          await cloudinary.deleteImage(image.cloudinaryId);
+        }
+      }
+      
+      // Also delete the image records
+      await ProductImage.deleteMany({ productId: id });
+    }).catch(err => {
+      console.error("Error in post-delete cleanup:", err);
+    });
 
     return sendResponse(res, true, "Product deleted successfully");
 
@@ -474,7 +536,7 @@ exports.getAdminStats = async (req, res) => {
       recentProducts,
       outOfStock,
       totalCategories,
-      totalRevenue  // ✅ WHY: Basic business metrics
+      totalRevenue
     ] = await Promise.all([
       Product.countDocuments({ isDeleted: false }),
       Product.countDocuments({ status: "active", isDeleted: false }),
@@ -485,7 +547,6 @@ exports.getAdminStats = async (req, res) => {
       Product.countDocuments({ createdAt: { $gte: last7Days } }),
       Product.countDocuments({ stock: 0, isDeleted: false }),
       Category.countDocuments({ status: "active" }),
-      // Calculate approximate revenue (price * totalSold)
       Product.aggregate([
         { $match: { isDeleted: false } },
         { $group: { _id: null, total: { $sum: { $multiply: ["$price", "$totalSold"] } } } }
@@ -558,7 +619,7 @@ exports.addPromotion = async (req, res) => {
       }
     }
 
-    // ✅ WHY: Check for overlapping promotions
+    // Check for overlapping promotions
     const existingPromotion = await Promotion.findOne({
       productId: id,
       type: type.toUpperCase(),
@@ -594,7 +655,6 @@ exports.addPromotion = async (req, res) => {
     sendResponse(res, false, "Failed to add promotion", null, 500);
   }
 };
-
 
 // ========================
 // REMOVE PROMOTION
@@ -635,6 +695,7 @@ exports.removePromotion = async (req, res) => {
     sendResponse(res, false, "Failed to remove promotion", null, 500);
   }
 };
+
 // ========================
 // 8️⃣ BULK OPERATIONS (For admin convenience)
 // ========================
@@ -674,7 +735,25 @@ exports.bulkUpdateProducts = async (req, res) => {
         break;
 
       case "delete":
+        // For bulk delete, we need to handle Cloudinary images
+        // This is a complex operation - we'll do it without transaction for now
         updateData = { isDeleted: true, status: "inactive" };
+        
+        // Get all images for these products to delete from Cloudinary
+        const images = await ProductImage.find({ 
+          productId: { $in: productIds } 
+        }).lean();
+        
+        // Delete from Cloudinary asynchronously
+        setTimeout(async () => {
+          for (const image of images) {
+            if (image.cloudinaryId) {
+              await cloudinary.deleteImage(image.cloudinaryId);
+            }
+          }
+          await ProductImage.deleteMany({ productId: { $in: productIds } });
+        }, 0);
+        
         break;
 
       default:
@@ -702,7 +781,6 @@ exports.bulkUpdateProducts = async (req, res) => {
     sendResponse(res, false, "Failed to perform bulk update", null, 500);
   }
 };
-
 
 // ========================
 // GET PRODUCT BY SLUG (SEO Friendly)
@@ -745,6 +823,5 @@ exports.getProductBySlug = async (req, res) => {
     sendResponse(res, false, "Failed to fetch product", null, 500);
   }
 };
-
 
 module.exports = exports;

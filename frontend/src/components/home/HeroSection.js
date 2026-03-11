@@ -9,7 +9,7 @@ const HeroSection = () => {
       <div className="absolute inset-0 w-full h-full z-0">
         <div className="absolute inset-0 bg-black/40 z-10"></div> {/* Dark Overlay */}
         <img
-          src="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?q=80&w=2070&auto=format&fit=crop"
+          src="https://img.freepik.com/premium-photo/skin-care-products_551707-7834.jpg"
           alt="Premium Fashion Collection"
           className="w-full h-full object-cover object-center"
         />

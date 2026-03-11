@@ -31,7 +31,7 @@ const BentoFeatures = () => {
                     >
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent z-10" />
                         <img
-                            src="https://images.unsplash.com/photo-1445205170230-053b83016050?q=80&w=1200"
+                            src="https://img.freepik.com/premium-photo/image-skin-care-products_162944-7546.jpg"
                             alt="Sustainable Fashion"
                             className="w-full h-full object-cover transform transition-transform duration-1000 group-hover:scale-105"
                         />

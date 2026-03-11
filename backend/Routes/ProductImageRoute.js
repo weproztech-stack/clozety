@@ -1,26 +1,31 @@
 const express = require("express");
-const router = express.Router({ mergeParams: true }); // to access :productId from parent
-
-const {
-    uploadProductImages,
-    getProductImages,
-    setPrimaryImage,
-    deleteProductImage,
-} = require("../Controllers/ProductImageController");
-
+const router = express.Router({ mergeParams: true }); // To access productId from parent route
 const { protect, adminOnly } = require("../Middleware/AuthMiddleware");
 const upload = require("../Middleware/Upload");
+const {
+  uploadProductImages,
+  getProductImages,
+  setPrimaryImage,
+  deleteProductImage,
+  updateImageDetails,
+  reorderImages
+} = require("../Controllers/ProductImageController");
 
-// @route GET    /api/products/:productId/images
+// Public routes
 router.get("/", getProductImages);
 
-// @route POST   /api/products/:productId/images  (upload multiple)
-router.post("/", protect, adminOnly, upload.array("images", 5), uploadProductImages);
+// Admin routes
+router.post(
+  "/",
+  protect,
+  adminOnly,
+  upload.array("images", 10),
+  uploadProductImages
+);
 
-// @route PUT    /api/products/:productId/images/:imageId/primary
+router.put("/reorder", protect, adminOnly, reorderImages);
 router.put("/:imageId/primary", protect, adminOnly, setPrimaryImage);
-
-// @route DELETE /api/products/:productId/images/:imageId
+router.put("/:imageId", protect, adminOnly, updateImageDetails);
 router.delete("/:imageId", protect, adminOnly, deleteProductImage);
 
 module.exports = router;

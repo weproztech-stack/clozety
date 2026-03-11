@@ -9,7 +9,7 @@ const cors = require("cors");
 const cookieParser = require("cookie-parser");
 
 const app = express();
-
+app.use(express.static('public'));
 // ===== Middleware =====
 app.use(cors({
   origin: "http://localhost:3000",
@@ -38,7 +38,8 @@ const contactRoutes = require("./Routes/ContactRoute");
 const paymentRoutes = require("./Routes/PaymentRoute");
 const shippingRoutes = require("./Routes/ShippingRoute");
 const statsRoutes = require("./Routes/StatsRoute");
-
+const uploadRoutes = require("./Routes/UploadRoute");
+app.use("/api/upload", uploadRoutes);
 app.use("/api/products", productRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);

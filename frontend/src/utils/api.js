@@ -1,7 +1,7 @@
 import axios from 'axios';
 import toast from 'react-hot-toast';
 
-const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+const API_URL ='https://milly-trusting-malignly.ngrok-free.dev' || 'http://localhost:5000';
 
 const api = axios.create({
   baseURL: API_URL,

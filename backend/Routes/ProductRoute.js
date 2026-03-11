@@ -1,66 +1,70 @@
 const express = require("express");
 const router = express.Router();
-const productController = require("../Controllers/ProductController");
-const upload = require("../Middleware/Upload"); // multer + cloudinary
-const productImageRoutes = require("./ProductImageRoute");
 const { protect, adminOnly } = require("../Middleware/AuthMiddleware");
+const upload = require("../Middleware/Upload");
+const {
+  createProduct,
+  getAllProducts,
+  getProductById,
+  updateProduct,
+  deleteProduct,
+  getAdminStats,
+  addPromotion,
+  removePromotion,
+  bulkUpdateProducts,
+  getProductBySlug
+} = require("../Controllers/ProductController");
 
+// Import image routes
+const imageRoutes = require("./ProductImageRoute");
+
+// Mount image routes
+router.use("/:productId/images", imageRoutes);
+
+// Public routes
+router.get("/", getAllProducts);
+router.get("/slug/:slug", getProductBySlug);
+router.get("/:id", getProductById);
+
+// Admin routes with Cloudinary upload
 router.post(
-  "/add",
+  "/",
   protect,
   adminOnly,
-  upload.array("images", 3),
-  productController.createProduct
+  upload.array("images", 10),
+  (req, res, next) => {
+    if (req.fileError) {
+      return res.status(400).json({ success: false, error: req.fileError });
+    }
+    next();
+  },
+  createProduct
 );
-
-router.get("/", productController.getAllProducts);
-
-router.get("/slug/:slug", productController.getProductBySlug); // before /:id
-router.get("/:id", productController.getProductById);
-
-// ProductRoute.js - Update route order
-
-
-// Make sure slug route comes BEFORE id route!
-// router.put(
-//   "/:id",
-//   upload.array("images", 3),
-//   productController.updateProduct
-// );
 
 router.put(
   "/:id",
   protect,
   adminOnly,
-  upload.array("images", 3),
-  productController.updateProduct
+  upload.array("images", 10),
+  (req, res, next) => {
+    if (req.fileError) {
+      return res.status(400).json({ success: false, error: req.fileError });
+    }
+    next();
+  },
+  updateProduct
 );
 
-router.delete(
-  "/delete/:id",
-  protect,
-  adminOnly,
-  productController.deleteProduct
-);
+router.delete("/:id", protect, adminOnly, deleteProduct);
 
-// Promotion routes (ADMIN ONLY)
-router.post(
-  "/:id/promotion",
-  protect,
-  adminOnly,
-  productController.addPromotion
-);
+// Admin stats
+router.get("/admin/stats", protect, adminOnly, getAdminStats);
 
-router.delete(
-  "/:id/promotion/:promoId",
-  protect,
-  adminOnly,
-  productController.removePromotion
-);
+// Promotions
+router.post("/:id/promotions", protect, adminOnly, addPromotion);
+router.delete("/:id/promotions/:promoId", protect, adminOnly, removePromotion);
 
-
-
-// Mount image routes — /:productId/images/**
-router.use("/:productId/images", productImageRoutes);
+// Bulk operations
+router.post("/bulk/update", protect, adminOnly, bulkUpdateProducts);
 
 module.exports = router;
