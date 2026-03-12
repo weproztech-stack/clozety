@@ -1,35 +1,48 @@
-# 🛒 Clozety — E-Commerce Platform
+### Overview
 
-Clozety is a full-stack E-Commerce application where users can browse products, manage carts, and place orders.  
-Built with modern web technologies and designed for scalability and production deployment.
+Here’s a **short, generic guide** for running this project locally from GitHub.
 
----
+### 1. Prerequisites
 
-## 🚀 Project Overview
+- **Git** installed
+- **Node.js + npm** installed (LTS version recommended, e.g. 20.x)
 
-This repository contains:
+### 2. Clone the repository
 
-- 🧩 Frontend — User interface
-- ⚙️ Backend — API server
-- 🗄 Database — MongoDB Atlas
+```bash
+git clone https://github.com/weproztech-stack/clozety.git
+cd clozety
+```
 
-Both developers can collaborate using shared database and Git workflow.
+### 3. Backend setup
 
----
+```bash
+cd backend
+npm install
+```
 
-## 🛠 Tech Stack
+- If needed, create an `.env` file (copy from `.env.example` if it exists) and fill in required variables.
+- Start the backend server:
 
-### Backend
-- Node.js
-- Express.js
-- MongoDB
-- Mongoose
-- dotenv
-- CORS
+```bash
+npm start
+# or
+npm run dev
+```
 
-### Frontend
-- React (or your frontend framework)
+### 4. Frontend setup
 
----
+Open a second terminal:
 
-## 📁 Project Structure
+```bash
+cd clozety/frontend
+npm install
+npm start
+```
+
+This will usually start the app at `http://localhost:3000`.
+
+### 5. Access the app
+
+- **Frontend**: `http://localhost:3000`
+- **Backend API**: typically `http://localhost:5000` or whatever port `backend/server.js` is configured to use.
